@@ -110,11 +110,11 @@ def init_crew_vocab(dataset,job):
 PRODUCTION_THRESH = 10
 
 
-def drop_small_prod(prod_dict):
+def drop_small_prod(prod_dict, thresh):
     res_dict = {}
     count = 0
     for key in prod_dict:
-        if prod_dict[key] > PRODUCTION_THRESH:
+        if prod_dict[key] > thresh:
             res_dict[key] = count
             count += 1
     return res_dict
@@ -128,27 +128,46 @@ def init_prod_vocab(dataset):
             if prod_comp["name"] not in prod_vocab:
                 prod_vocab[prod_comp["name"]] = 0
             prod_vocab[prod_comp["name"]] += 1
-    return drop_small_prod(prod_vocab)
+    return drop_small_prod(prod_vocab, PRODUCTION_THRESH)
 
 
 
+COUNTRY_THRESH = 5
 
+def init_production_countries_vocab(dataset):
+    countries_vocab = {}
+    col = dictioning_column(dataset["production_countries"])
+    for row in col:
+        for prod_country in row:
+            if prod_country["name"] not in countries_vocab:
+                countries_vocab[prod_country["name"]] = 0
+            countries_vocab[prod_country["name"]] += 1
+    return drop_small_prod(countries_vocab, COUNTRY_THRESH)
+
+LANGUAGE_THRESH = 10
+
+def init_language_vocab(dataset):
+    language_vocab = {}
+    col = dictioning_column(dataset["spoken_languages"])
+    for row in col:
+        for prod_country in row:
+            if prod_country["name"] not in language_vocab:
+                language_vocab[prod_country["name"]] = 0
+            language_vocab[prod_country["name"]] += 1
+    return drop_small_prod(language_vocab, LANGUAGE_THRESH)
 
 
 def test(dataset):
-
-
     GENRES_VOCAB = init_genres_vocab(dataset)
     CAST_VOCAB = init_cast_vocab(dataset)
     PRODUCER_VOCAB = init_crew_vocab(dataset, ['Director'])
     DIRECTOR_VOCAB = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
     KEYWORDS_VOCAB = init_keyword_vocab(dataset)
     PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
-    print(PRODUCTION_COMPANY_VOCAB)
-
-
-
-
+    PRODUCTION_COUNTRY_VOCAB = init_production_countries_vocab(dataset)
+    language_vocab = init_language_vocab(dataset)
+    print (language_vocab)
+    import pdb; pdb.set_trace()
 
 
 def main():
