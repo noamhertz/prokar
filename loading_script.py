@@ -88,7 +88,6 @@ def init_keyword_vocab(dataset):
     for row in col:
         for keyword in row:
             if keyword["name"] in keywords_vocab:
-                print(keyword["name"])
                 continue
             keywords_vocab[keyword["name"]] = count
             count += 1
@@ -108,16 +107,47 @@ def init_crew_vocab(dataset,job):
     return crew_vocab
 
 
+PRODUCTION_THRESH = 10
+
+
+def drop_small_prod(prod_dict):
+    res_dict = {}
+    count = 0
+    for key in prod_dict:
+        if prod_dict[key] > PRODUCTION_THRESH:
+            res_dict[key] = count
+            count += 1
+    return res_dict
+
+
+def init_prod_vocab(dataset):
+    prod_vocab = {}
+    col = dictioning_column(dataset["production_companies"])
+    for row in col:
+        for prod_comp in row:
+            if prod_comp["name"] not in prod_vocab:
+                prod_vocab[prod_comp["name"]] = 0
+            prod_vocab[prod_comp["name"]] += 1
+    return drop_small_prod(prod_vocab)
+
+
+
+
+
 
 def test(dataset):
-    #import pdb;
-    #pdb.set_trace()
+
 
     GENRES_VOCAB = init_genres_vocab(dataset)
     CAST_VOCAB = init_cast_vocab(dataset)
     PRODUCER_VOCAB = init_crew_vocab(dataset, ['Director'])
     DIRECTOR_VOCAB = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
     KEYWORDS_VOCAB = init_keyword_vocab(dataset)
+    PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
+    print(PRODUCTION_COMPANY_VOCAB)
+
+
+
 
 
 
@@ -129,3 +159,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
