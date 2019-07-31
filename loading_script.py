@@ -5,7 +5,13 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import csv
 from IPython.display import display, clear_output
+
+
 from datetime import datetime
+import logging
+
+from boosting import *
+
 CSV_PATH = './train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
 
@@ -175,6 +181,7 @@ def build_rep_vec_row(row, vocab_dict):
     for item in row:
         if item["name"] in vocab_dict:
             rep_vec[vocab_dict[item["name"]]] += 1
+            # import pdb; pdb.set_trace()
     return rep_vec
 
 
@@ -185,7 +192,18 @@ def build_rep_vector_column(column, vocab_dict):
     return rep_vec_col
 
 
-def test(dataset):
+def build_new_df(list_of_name_values_tuples):
+    new_df = pd.DataFrame()
+    for index, tup in enumerate(list_of_name_values_tuples):
+        try:
+            new_df.insert(index, *tup, allow_duplicates=False)
+        except ValueError:
+            continue
+    return new_df
+
+
+
+def data_manipulation(dataset):
     genres_col_vocab_tup = init_genres_vocab(dataset)
     cast_col_vocab_tup = init_cast_vocab(dataset)
     director_col_vocab_tup = init_crew_vocab(dataset, ['Director'])
@@ -198,28 +216,47 @@ def test(dataset):
     col = dataset["release_date"]
     years_col, months_col = extract_release_year_month(col)
 
+    list_of_name_values_tuples = [('id', dataset["id"])]
+    list_of_name_values_tuples.append(('runtime', dataset["runtime"]))
+    list_of_name_values_tuples.append(('release_year', years_col))
+    list_of_name_values_tuples.append(('release_month', months_col))
+    list_of_name_values_tuples.append(('genres', build_rep_vector_column(*genres_col_vocab_tup)))
+    list_of_name_values_tuples.append(('cast', build_rep_vector_column(*cast_col_vocab_tup)))
+    list_of_name_values_tuples.append(('director', build_rep_vector_column(*director_col_vocab_tup)))
+    list_of_name_values_tuples.append(('producer', build_rep_vector_column(*producer_col_vocab_tup)))
+    list_of_name_values_tuples.append(('keywords', build_rep_vector_column(*keywords_col_vocab_tup)))
+    list_of_name_values_tuples.append(('production_company', build_rep_vector_column(*prod_company_col_vocab_tup)))
+    list_of_name_values_tuples.append(('production_country', build_rep_vector_column(*prod_country_col_vocab_tup)))
+    list_of_name_values_tuples.append(('spoken_language', build_rep_vector_column(*language_col_vocab_tup)))
+
+    list_of_name_values_tuples.append(('budget', dataset["budget"]))
+    list_of_name_values_tuples.append(('Revenue', dataset["revenue"]))
+
+
+    logging.info('building new database')
+    df = build_new_df(list_of_name_values_tuples)
+    return df
+
+
+def test(df):
     import pdb;
     pdb.set_trace()
-    genres_vec_col = build_rep_vector_column(*genres_col_vocab_tup)
-    cast_vec_col = build_rep_vector_column(*cast_col_vocab_tup)
-    director_vec_col = build_rep_vector_column(*director_col_vocab_tup)
-    producer_vec_col = build_rep_vector_column(*producer_col_vocab_tup)
-    keywords_vec_col = build_rep_vector_column(*keywords_col_vocab_tup)
-    prod_company_vec_col = build_rep_vector_column(*prod_company_col_vocab_tup)
-    country_company_vec_col = build_rep_vector_column(*prod_country_col_vocab_tup)
-    language_vec_col = build_rep_vector_column(*language_col_vocab_tup)
 
-
-
-    pdb.set_trace()
 
 def main():
     dataset = get_movies_db()
-    df = dataset.head(100)
-    test(df)
+    logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+    import pdb;
+    pdb.set_trace()
+    df = dataset.head(50)
+    df = data_manipulation(df)
+    logistic_reg(df)
+
+    pdb.set_trace()
 
 
 if __name__ == "__main__":
     main()
+
 
 
