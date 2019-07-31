@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import csv
 from IPython.display import display, clear_output
+from datetime import datetime
 CSV_PATH = './train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
 
@@ -62,7 +63,7 @@ def init_genres_vocab(dataset):
                 continue
             GENRES_VOCAB[genre["name"]] = count
             count += 1
-    return GENRES_VOCAB
+    return col, GENRES_VOCAB
 
 def init_cast_vocab(dataset):
     CAST_VOCAB = {}
@@ -79,7 +80,7 @@ def init_cast_vocab(dataset):
                 continue
             CAST_VOCAB[cast_member["name"]] = count
             count += 1
-    return CAST_VOCAB
+    return col, CAST_VOCAB
 
 def init_keyword_vocab(dataset):
     keywords_vocab = {}
@@ -91,7 +92,7 @@ def init_keyword_vocab(dataset):
                 continue
             keywords_vocab[keyword["name"]] = count
             count += 1
-    return keywords_vocab
+    return col, keywords_vocab
 
 
 def init_crew_vocab(dataset,job):
@@ -104,7 +105,7 @@ def init_crew_vocab(dataset,job):
                 continue
             crew_vocab[crew_member["name"]] = count
             count += 1
-    return crew_vocab
+    return col, crew_vocab
 
 
 PRODUCTION_THRESH = 10
@@ -128,7 +129,7 @@ def init_prod_vocab(dataset):
             if prod_comp["name"] not in prod_vocab:
                 prod_vocab[prod_comp["name"]] = 0
             prod_vocab[prod_comp["name"]] += 1
-    return drop_small_prod(prod_vocab, PRODUCTION_THRESH)
+    return col, drop_small_prod(prod_vocab, PRODUCTION_THRESH),
 
 
 
@@ -142,7 +143,7 @@ def init_production_countries_vocab(dataset):
             if prod_country["name"] not in countries_vocab:
                 countries_vocab[prod_country["name"]] = 0
             countries_vocab[prod_country["name"]] += 1
-    return drop_small_prod(countries_vocab, COUNTRY_THRESH)
+    return col, drop_small_prod(countries_vocab, COUNTRY_THRESH)
 
 LANGUAGE_THRESH = 10
 
@@ -154,28 +155,71 @@ def init_language_vocab(dataset):
             if prod_country["name"] not in language_vocab:
                 language_vocab[prod_country["name"]] = 0
             language_vocab[prod_country["name"]] += 1
-    return drop_small_prod(language_vocab, LANGUAGE_THRESH)
+    return col, drop_small_prod(language_vocab, LANGUAGE_THRESH)
+
+def extract_release_year_month(column):
+    year_column = []
+    month_column = []
+    year_column = [datetime.strptime(x, '%m/%d/%y') for x in column]
+    for i, x in enumerate(year_column):
+        if x.year > 2030:
+            x = x.replace(year=x.year-100)
+        year_column[i] = x.strftime('%Y')
+
+        month_column.append(x.strftime('%m'))
+    return year_column, month_column
+
+
+def build_rep_vec_row(row, vocab_dict):
+    rep_vec = np.zeros(len(vocab_dict), dtype=int)
+    for item in row:
+        if item["name"] in vocab_dict:
+            rep_vec[vocab_dict[item["name"]]] += 1
+    return rep_vec
+
+
+def build_rep_vector_column(column, vocab_dict):
+    rep_vec_col = []
+    for row in column:
+        rep_vec_col.append(build_rep_vec_row(row, vocab_dict))
+    return rep_vec_col
 
 
 def test(dataset):
-    GENRES_VOCAB = init_genres_vocab(dataset)
-    CAST_VOCAB = init_cast_vocab(dataset)
-    PRODUCER_VOCAB = init_crew_vocab(dataset, ['Director'])
-    DIRECTOR_VOCAB = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
-    KEYWORDS_VOCAB = init_keyword_vocab(dataset)
-    PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
-    PRODUCTION_COUNTRY_VOCAB = init_production_countries_vocab(dataset)
-    language_vocab = init_language_vocab(dataset)
-    print (language_vocab)
-    import pdb; pdb.set_trace()
+    genres_col_vocab_tup = init_genres_vocab(dataset)
+    cast_col_vocab_tup = init_cast_vocab(dataset)
+    director_col_vocab_tup = init_crew_vocab(dataset, ['Director'])
+    producer_col_vocab_tup = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
+    keywords_col_vocab_tup = init_keyword_vocab(dataset)
+    prod_company_col_vocab_tup = init_prod_vocab(dataset)
+    prod_country_col_vocab_tup = init_production_countries_vocab(dataset)
+    language_col_vocab_tup = init_language_vocab(dataset)
 
+    col = dataset["release_date"]
+    years_col, months_col = extract_release_year_month(col)
+
+    import pdb;
+    pdb.set_trace()
+    genres_vec_col = build_rep_vector_column(*genres_col_vocab_tup)
+    cast_vec_col = build_rep_vector_column(*cast_col_vocab_tup)
+    director_vec_col = build_rep_vector_column(*director_col_vocab_tup)
+    producer_vec_col = build_rep_vector_column(*producer_col_vocab_tup)
+    keywords_vec_col = build_rep_vector_column(*keywords_col_vocab_tup)
+    prod_company_vec_col = build_rep_vector_column(*prod_company_col_vocab_tup)
+    country_company_vec_col = build_rep_vector_column(*prod_country_col_vocab_tup)
+    language_vec_col = build_rep_vector_column(*language_col_vocab_tup)
+
+
+
+    pdb.set_trace()
 
 def main():
     dataset = get_movies_db()
-    test(dataset)
-
+    df = dataset.head(100)
+    test(df)
 
 
 if __name__ == "__main__":
     main()
+
 
