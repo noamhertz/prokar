@@ -7,8 +7,6 @@ import csv
 from IPython.display import display, clear_output
 CSV_PATH = './datasets/train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
-#hi its me
-
 
 def get_movies_db():
     pd.set_option("display.max_colwidth", 10000)
@@ -54,31 +52,33 @@ def dictioning_column(column):
 
 def init_genres_vocab(dataset):
     GENRES_VOCAB = {}
-    count = 0
     col = dictioning_column(dataset["genres"])
+    count = 0
     for row in col:
+        count += 1
         for genre in row:
             if genre["name"] in GENRES_VOCAB:
+                GENRES_VOCAB[genre["name"]].append(count)
                 continue
-            GENRES_VOCAB[genre["name"]] = count
-            count += 1
+            GENRES_VOCAB[genre["name"]] = [count]
     return GENRES_VOCAB
+
 
 def init_cast_vocab(dataset):
     CAST_VOCAB = {}
-
     count = 0
     col = dictioning_column(dataset["cast"])
     for row in col:
+        count += 1
         id_count = 0
         for cast_member in row:
             if id_count > 2:
                 break
             id_count += 1
             if cast_member["name"] in CAST_VOCAB:
+                CAST_VOCAB[cast_member["name"]].append(count)
                 continue
-            CAST_VOCAB[cast_member["name"]] = count
-            count += 1
+            CAST_VOCAB[cast_member["name"]] = [count]
     return CAST_VOCAB
 
 def init_keyword_vocab(dataset):
