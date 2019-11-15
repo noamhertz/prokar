@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
 import ast
+from datetime import datetime as dt
 CSV_PATH = './datasets/train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
 CAST_MAX_PRIO = 3
@@ -12,6 +14,7 @@ PRODUCTION_THRESH = 10
 KEYWORD_THRESH = 5
 LANGAUGE_THRESH = 7
 COUNTRY_THRESH = 5
+DATE_THRESH = 2
 
 
 def get_movies_db():
@@ -52,6 +55,34 @@ def dictioning_column(column):
 
 
 
+def init_date_vocab(dataset, date_type):
+    date_vocab = {}
+    date_col = dataset["release_date"]
+    movie_id = 0
+    for release_date in date_col:
+        movie_id += 1
+        date = dt.strptime(release_date, "%m/%d/%y")
+        if date_type == "year":
+            if date.year > dt.now().year:
+                year = date.year - 100
+            else:
+                year = date.year
+            if year not in date_vocab:
+                date_vocab[year] = [movie_id]
+            else:
+                date_vocab[year].append(movie_id)
+        elif date_type == "month":
+            if date.month not in date_vocab:
+                date_vocab[date.month] = [movie_id]
+            else:
+                date_vocab[date.month].append(movie_id)
+        elif date_type == "day":
+            if date.day not in date_vocab:
+                date_vocab[date.day] = [movie_id]
+            else:
+                date_vocab[date.day].append(movie_id)
+    return filter_vocabs(date_vocab, DATE_THRESH)
+
 def init_genres_vocab(dataset):
     genres_vocab = {}
     genre_col = dictioning_column(dataset["genres"])
@@ -83,7 +114,6 @@ def init_cast_vocab(dataset):
                 cast_vocab[cast_member["name"]].append(movie_id)
             cast_counter += 1
     return filter_vocabs(cast_vocab, CAST_THRESH)
-
 
 def init_keyword_vocab(dataset):
     keywords_vocab = {}
@@ -158,7 +188,6 @@ def init_country_vocab(dataset):
     return filter_vocabs(country_vocab, COUNTRY_THRESH)
 
 def filter_vocabs(vocab, thresh):
-
     filtered_vocab = {}
     for item in vocab:
         if len(vocab[item]) >= thresh:
@@ -173,18 +202,18 @@ def count_vocab(vocab):
 
 
 def test(dataset):
-
-    #GENRES_VOCAB             = init_genres_vocab(dataset)
-    #CAST_VOCAB               = init_cast_vocab(dataset)
-    #DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
-    #KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
-    #PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
+    YEAR_VOCAB               = init_date_vocab(dataset, "year")
+    MONTH_VOCAB              = init_date_vocab(dataset, "month")
+    GENRES_VOCAB             = init_genres_vocab(dataset)
+    CAST_VOCAB               = init_cast_vocab(dataset)
+    DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
+    KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
+    PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
     # PRODUCER_VOCAB           = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
     LANAGUAGE_VOCAB = init_language_vocab(dataset)
     COUNTRY_VOCAB = init_country_vocab(dataset)
     COUNTRY_COUNT = count_vocab(COUNTRY_VOCAB)
     print(PRODUCTION_COMPANY_VOCAB)
-
 
 def main():
     dataset = get_movies_db()
