@@ -7,6 +7,7 @@ import csv
 from IPython.display import display, clear_output
 CSV_PATH = './datasets/train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
+CAST_NUM = 2
 
 def get_movies_db():
     pd.set_option("display.max_colwidth", 10000)
@@ -52,33 +53,35 @@ def dictioning_column(column):
 
 def init_genres_vocab(dataset):
     GENRES_VOCAB = {}
-    col = dictioning_column(dataset["genres"])
-    count = 0
-    for row in col:
-        count += 1
-        for genre in row:
-            if genre["name"] in GENRES_VOCAB:
-                GENRES_VOCAB[genre["name"]].append(count)
-                continue
-            GENRES_VOCAB[genre["name"]] = [count]
+    genre_col = dictioning_column(dataset["genres"])
+    movie_id = 0
+    for movie in genre_col:
+        movie_id += 1
+        for genre in movie:
+            if genre["name"] not in GENRES_VOCAB:
+                #Adding a new genre to vocab
+                GENRES_VOCAB[genre["name"]] = [movie_id]
+            else:
+                GENRES_VOCAB[genre["name"]].append(movie_id)
     return GENRES_VOCAB
 
 
 def init_cast_vocab(dataset):
     CAST_VOCAB = {}
-    count = 0
-    col = dictioning_column(dataset["cast"])
-    for row in col:
-        count += 1
-        id_count = 0
-        for cast_member in row:
-            if id_count > 2:
+    cast_col = dictioning_column(dataset["cast"])
+    movie_id = 0
+    for movie in cast_col:
+        movie_id += 1
+        cast_counter = 0
+        for cast_member in movie:
+            if cast_counter > CAST_NUM:
                 break
-            id_count += 1
-            if cast_member["name"] in CAST_VOCAB:
-                CAST_VOCAB[cast_member["name"]].append(count)
-                continue
-            CAST_VOCAB[cast_member["name"]] = [count]
+            if cast_member["name"] not in CAST_VOCAB:
+                # Adding a new cast member to vocab
+                CAST_VOCAB[cast_member["name"]] = [movie_id]
+            else:
+                CAST_VOCAB[cast_member["name"]].append(movie_id)
+            cast_counter += 1
     return CAST_VOCAB
 
 def init_keyword_vocab(dataset):
@@ -157,6 +160,7 @@ def test(dataset):
 def main():
     dataset = get_movies_db()
     test(dataset)
+    print("end")
 
 
 
