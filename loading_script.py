@@ -84,6 +84,7 @@ def init_cast_vocab(dataset):
             cast_counter += 1
     return CAST_VOCAB
 
+
 def init_keyword_vocab(dataset):
     keywords_vocab = {}
     col = dictioning_column(dataset["Keywords"])
