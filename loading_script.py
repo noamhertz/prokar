@@ -1,10 +1,5 @@
-import numpy as np
 import pandas as pd
 import ast
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-import csv
-from IPython.display import display, clear_output
 CSV_PATH = './datasets/train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
 CAST_MAX_PRIO = 3
@@ -15,6 +10,8 @@ GENRE_THRESH = 5
 CREW_THRESH = 1
 PRODUCTION_THRESH = 10
 KEYWORD_THRESH = 5
+LANGAUGE_THRESH = 7
+COUNTRY_THRESH = 5
 
 
 def get_movies_db():
@@ -131,7 +128,37 @@ def init_prod_vocab(dataset):
                 prod_vocab[prod_comp["name"]].append(movie_id)
     return filter_vocabs(prod_vocab, PRODUCTION_THRESH)
 
+
+def init_language_vocab(dataset):
+    lang_vocab = {}
+    lang_col = dictioning_column(dataset["spoken_languages"])
+    movie_id = 0
+    for movie in lang_col:
+        movie_id += 1
+        for lang in movie:
+            if lang["iso_639_1"] not in lang_vocab:
+                # Adding a new production company to vocab
+                lang_vocab[lang["iso_639_1"]] = [movie_id]
+            else:
+                lang_vocab[lang["iso_639_1"]].append(movie_id)
+    return filter_vocabs(lang_vocab, LANGAUGE_THRESH)
+
+def init_country_vocab(dataset):
+    country_vocab = {}
+    country_col = dictioning_column(dataset["production_countries"])
+    movie_id = 0
+    for movie in country_col:
+        movie_id += 1
+        for country in movie:
+            if country["name"] not in country_vocab:
+                # Adding a new production company to vocab
+                country_vocab[country["name"]] = [movie_id]
+            else:
+                country_vocab[country["name"]].append(movie_id)
+    return filter_vocabs(country_vocab, COUNTRY_THRESH)
+
 def filter_vocabs(vocab, thresh):
+
     filtered_vocab = {}
     for item in vocab:
         if len(vocab[item]) >= thresh:
@@ -140,13 +167,17 @@ def filter_vocabs(vocab, thresh):
 
 
 def test(dataset):
-    GENRES_VOCAB             = init_genres_vocab(dataset)
-    CAST_VOCAB               = init_cast_vocab(dataset)
-    DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
-    KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
-    PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
+
+    #GENRES_VOCAB             = init_genres_vocab(dataset)
+    #CAST_VOCAB               = init_cast_vocab(dataset)
+    #DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
+    #KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
+    #PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
     # PRODUCER_VOCAB           = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
+    LANAGUAGE_VOCAB = init_language_vocab(dataset)
+    COUNTRY_VOCAB = init_country_vocab(dataset)
     print(PRODUCTION_COMPANY_VOCAB)
+
 
 def main():
     dataset = get_movies_db()
