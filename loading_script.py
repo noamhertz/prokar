@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import csv
 from IPython.display import display, clear_output
-CSV_PATH = './train.csv'
+CSV_PATH = './datasets/train.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
 
 
