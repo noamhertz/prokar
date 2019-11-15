@@ -5,8 +5,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import AdaBoostClassifier
+from gensim.test.utils import common_texts, get_tmpfile
+from gensim.models import Word2Vec
 
 
+from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab
+
+GENRE_THRESH = 5
 
 def build_sets(df):
     x = df[['director', 'genres']].values
@@ -36,3 +41,21 @@ def logistic_reg(df):
     clf.fit(x_train, y_train)
     y_pred = clf.predict(x_test)
     print(clf.__class__.__name__, accuracy_score(y_test, y_pred))
+
+def test(dataset):
+    GENRES_VOCAB = init_genres_vocab(dataset)
+    path = get_tmpfile("word2vec.model")
+    model = Word2Vec(common_texts, size=100, window=5, min_count=1, workers=4)
+    model.save("word2vec.model")
+    model = Word2Vec.load("word2vec.model")
+    model.train([["hello", "world"]], total_examples=1, epochs=1)
+
+
+
+def main():
+    dataset = get_movies_db()
+    test(dataset)
+    print("end")
+
+if __name__ == "__main__":
+    main()
