@@ -14,6 +14,8 @@ CAST_THRESH = 2
 GENRE_THRESH = 5
 CREW_THRESH = 1
 PRODUCTION_THRESH = 10
+KEYWORD_THRESH = 5
+
 
 def get_movies_db():
     pd.set_option("display.max_colwidth", 10000)
@@ -53,7 +55,6 @@ def dictioning_column(column):
 
 
 
-
 def init_genres_vocab(dataset):
     genres_vocab = {}
     genre_col = dictioning_column(dataset["genres"])
@@ -66,7 +67,7 @@ def init_genres_vocab(dataset):
                 genres_vocab[genre["name"]] = [movie_id]
             else:
                 genres_vocab[genre["name"]].append(movie_id)
-    return genres_vocab
+    return filter_vocabs(genres_vocab, GENRE_THRESH)
 
 def init_cast_vocab(dataset):
     cast_vocab = {}
@@ -84,7 +85,7 @@ def init_cast_vocab(dataset):
             else:
                 cast_vocab[cast_member["name"]].append(movie_id)
             cast_counter += 1
-    return cast_vocab
+    return filter_vocabs(cast_vocab, CAST_THRESH)
 
 def init_keyword_vocab(dataset):
     keywords_vocab = {}
@@ -97,7 +98,7 @@ def init_keyword_vocab(dataset):
                 keywords_vocab[keyword["name"]] = [movie_id]
             else:
                 keywords_vocab[keyword["name"]].append(movie_id)
-    return keywords_vocab
+    return filter_vocabs(keywords_vocab, KEYWORD_THRESH)
 
 def init_crew_vocab(dataset,job):
     crew_vocab = {}
@@ -113,17 +114,7 @@ def init_crew_vocab(dataset,job):
                 crew_vocab[crew_member["name"]] = [movie_id]
             else:
                 crew_vocab[crew_member["name"]].append(movie_id)
-    return crew_vocab
-
-def filter_production_companies(prod_dict):
-    res_dict = {}
-    count = 0
-    for key in prod_dict:
-        if len(prod_dict[key]) > PRODUCTION_THRESH:
-            res_dict[key] = count
-            count += 1
-    return res_dict
-
+    return filter_vocabs(crew_vocab, CREW_THRESH)
 
 def init_prod_vocab(dataset):
     prod_vocab = {}
@@ -137,10 +128,14 @@ def init_prod_vocab(dataset):
                 prod_vocab[prod_comp["name"]] = [movie_id]
             else:
                 prod_vocab[prod_comp["name"]].append(movie_id)
-    return prod_vocab
+    return filter_vocabs(prod_vocab, PRODUCTION_THRESH)
 
-
-
+def filter_vocabs(vocab, thresh):
+    filtered_vocab = {}
+    for item in vocab:
+        if len(vocab[item]) >= thresh:
+            filtered_vocab[item] = vocab[item]
+    return filtered_vocab
 
 
 def test(dataset):
@@ -150,7 +145,7 @@ def test(dataset):
     KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
     PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
     # PRODUCER_VOCAB           = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
-    # print(PRODUCTION_COMPANY_VOCAB)
+    print(PRODUCTION_COMPANY_VOCAB)
 
 def main():
     dataset = get_movies_db()
