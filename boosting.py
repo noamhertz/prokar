@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import AdaBoostClassifier
 
 
+
 def build_sets(df):
     x = df[['director', 'genres']].values
     y = df['Revenue'].values

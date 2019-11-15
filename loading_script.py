@@ -165,6 +165,12 @@ def filter_vocabs(vocab, thresh):
             filtered_vocab[item] = vocab[item]
     return filtered_vocab
 
+def count_vocab(vocab):
+    appearance_vocab = {}
+    for item in vocab:
+        appearance_vocab[item] = len(vocab[item])
+    return appearance_vocab
+
 
 def test(dataset):
 
@@ -176,6 +182,7 @@ def test(dataset):
     # PRODUCER_VOCAB           = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
     LANAGUAGE_VOCAB = init_language_vocab(dataset)
     COUNTRY_VOCAB = init_country_vocab(dataset)
+    COUNTRY_COUNT = count_vocab(COUNTRY_VOCAB)
     print(PRODUCTION_COMPANY_VOCAB)
 
 
