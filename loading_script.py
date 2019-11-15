@@ -86,11 +86,11 @@ def init_keyword_vocab(dataset):
     col = dictioning_column(dataset["Keywords"])
     count = 0
     for row in col:
+        count += 1
         for keyword in row:
             if keyword["name"] in keywords_vocab:
-                continue
-            keywords_vocab[keyword["name"]] = count
-            count += 1
+                keywords_vocab[keyword["name"]].append(count)
+            keywords_vocab[keyword["name"]] = [count]
     return keywords_vocab
 
 
@@ -99,11 +99,14 @@ def init_crew_vocab(dataset,job):
     count = 0
     col = dictioning_column(dataset["crew"])
     for row in col:
+        count += 1
         for crew_member in row:
-            if crew_member["name"] in crew_vocab or crew_member["job"] not in job:
+            if crew_member["job"] not in job:
                 continue
-            crew_vocab[crew_member["name"]] = count
-            count += 1
+            if crew_member["name"] in crew_vocab:
+                crew_vocab[crew_member["name"]].append(count)
+            else:
+                crew_vocab[crew_member["name"]] = [count]
     return crew_vocab
 
 
@@ -140,8 +143,8 @@ def test(dataset):
 
     GENRES_VOCAB = init_genres_vocab(dataset)
     CAST_VOCAB = init_cast_vocab(dataset)
-    PRODUCER_VOCAB = init_crew_vocab(dataset, ['Director'])
-    DIRECTOR_VOCAB = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
+    DIRECTOR_VOCAB = init_crew_vocab(dataset, ['Director'])
+    # PRODUCER_VOCAB= init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
     KEYWORDS_VOCAB = init_keyword_vocab(dataset)
     PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
     print(PRODUCTION_COMPANY_VOCAB)
