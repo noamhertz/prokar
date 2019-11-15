@@ -12,7 +12,7 @@ GENRE_THRESH = 5
 CREW_THRESH = 1
 PRODUCTION_THRESH = 10
 KEYWORD_THRESH = 5
-LANGAUGE_THRESH = 7
+LANGUAGE_THRESH = 7
 COUNTRY_THRESH = 5
 DATE_THRESH = 2
 
@@ -158,7 +158,6 @@ def init_prod_vocab(dataset):
                 prod_vocab[prod_comp["name"]].append(movie_id)
     return filter_vocabs(prod_vocab, PRODUCTION_THRESH)
 
-
 def init_language_vocab(dataset):
     lang_vocab = {}
     lang_col = dictioning_column(dataset["spoken_languages"])
@@ -171,7 +170,7 @@ def init_language_vocab(dataset):
                 lang_vocab[lang["iso_639_1"]] = [movie_id]
             else:
                 lang_vocab[lang["iso_639_1"]].append(movie_id)
-    return filter_vocabs(lang_vocab, LANGAUGE_THRESH)
+    return filter_vocabs(lang_vocab, LANGUAGE_THRESH)
 
 def init_country_vocab(dataset):
     country_vocab = {}
@@ -198,22 +197,23 @@ def count_vocab(vocab):
     appearance_vocab = {}
     for item in vocab:
         appearance_vocab[item] = len(vocab[item])
-    return appearance_vocab
+    return sorted(appearance_vocab.items(), key=lambda x:x[1])
 
 
 def test(dataset):
-    YEAR_VOCAB               = init_date_vocab(dataset, "year")
-    MONTH_VOCAB              = init_date_vocab(dataset, "month")
-    GENRES_VOCAB             = init_genres_vocab(dataset)
-    CAST_VOCAB               = init_cast_vocab(dataset)
-    DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
-    KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
-    PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
+    # YEAR_VOCAB               = init_date_vocab(dataset, "year")
+    # MONTH_VOCAB              = init_date_vocab(dataset, "month")
+    # GENRES_VOCAB             = init_genres_vocab(dataset)
+    # CAST_VOCAB               = init_cast_vocab(dataset)
+    # DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
+    # KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
+    # PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
     # PRODUCER_VOCAB           = init_crew_vocab(dataset, ['Producer', 'Executive Producer'])
-    LANAGUAGE_VOCAB = init_language_vocab(dataset)
-    COUNTRY_VOCAB = init_country_vocab(dataset)
-    COUNTRY_COUNT = count_vocab(COUNTRY_VOCAB)
-    print(PRODUCTION_COMPANY_VOCAB)
+    # LANGUAGE_VOCAB           = init_language_vocab(dataset)
+    # LANGUAGE_COUNT           = count_vocab(LANGUAGE_VOCAB)
+    # COUNTRY_VOCAB            = init_country_vocab(dataset)
+    # COUNTRY_COUNT            = count_vocab(COUNTRY_VOCAB)
+    print("test ended")
 
 def main():
     dataset = get_movies_db()
