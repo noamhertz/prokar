@@ -7,9 +7,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import AdaBoostClassifier
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
+from gensim.models import KeyedVectors
 
-
-from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab
+from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, geners_vocab_list
 
 GENRE_THRESH = 5
 
@@ -43,13 +43,17 @@ def logistic_reg(df):
     print(clf.__class__.__name__, accuracy_score(y_test, y_pred))
 
 def test(dataset):
-    GENRES_VOCAB = init_genres_vocab(dataset)
+    GENRES_VOCAB = geners_vocab_list(dataset)
+
     path = get_tmpfile("word2vec.model")
-    model = Word2Vec(common_texts, size=100, window=5, min_count=1, workers=4)
+    model = Word2Vec(GENRES_VOCAB, size=100, window=5, min_count=1, workers=4)
+    ct = common_texts
     model.save("word2vec.model")
     model = Word2Vec.load("word2vec.model")
-    model.train([["hello", "world"]], total_examples=1, epochs=1)
-
+    trained = model.train([["hello", "world"]], total_examples=1, epochs=1)
+    vector0 = model.wv['Family']
+    vector1 = model.wv['Horror']
+    print('end of test')
 
 
 def main():

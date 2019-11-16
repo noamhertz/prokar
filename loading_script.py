@@ -201,6 +201,16 @@ def count_vocab(vocab):
         appearance_vocab[item] = len(vocab[item])
     return sorted(appearance_vocab.items(), key=lambda x:x[1])
 
+def geners_vocab_list(dataset):
+    genres_vocab = []
+    genre_col = dictioning_column(dataset["genres"])
+    count = 0
+    for movie in genre_col:
+        genres_vocab.append([])
+        for genre in movie:
+            genres_vocab[count].append(genre["name"])
+        count +=1
+    return genres_vocab
 
 def test(dataset):
     # YEAR_VOCAB               = init_date_vocab(dataset, "year")
@@ -215,6 +225,7 @@ def test(dataset):
     # LANGUAGE_COUNT           = count_vocab(LANGUAGE_VOCAB)
     # COUNTRY_VOCAB            = init_country_vocab(dataset)
     # COUNTRY_COUNT            = count_vocab(COUNTRY_VOCAB)
+    #geners_vocab_list(dataset)
     print("test ended")
 
 def main():
