@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import ast
 from datetime import datetime as dt
-CSV_PATH = './datasets/train.csv'
+TRAIN_CSV_PATH = './datasets/train.csv'
+TEST_CSV_PATH = './datasets/test.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
 CAST_MAX_PRIO = 3
 
@@ -17,9 +18,9 @@ COUNTRY_THRESH = 5
 DATE_THRESH = 2
 
 
-def get_movies_db():
+def get_movies_db(path):
     pd.set_option("display.max_colwidth", 10000)
-    dataset = pd.read_csv(CSV_PATH)
+    dataset = pd.read_csv(path)
     # print the number of rows in the data set
     number_of_rows = len(dataset)
     print("total samples: {}".format(number_of_rows))
@@ -194,12 +195,15 @@ def filter_vocabs(vocab, thresh):
         if len(vocab[item]) >= thresh:
             filtered_vocab[item] = vocab[item]
     return filtered_vocab
-
+#############################
 def count_vocab(vocab):
     appearance_vocab = {}
     for item in vocab:
         appearance_vocab[item] = len(vocab[item])
     return sorted(appearance_vocab.items(), key=lambda x:x[1])
+
+
+
 
 def geners_vocab_list(dataset):
     genres_vocab = []
@@ -212,10 +216,18 @@ def geners_vocab_list(dataset):
         count +=1
     return genres_vocab
 
+def revenue_list(dataset):
+    revenues = []
+    rev_col = dataset["revenue"]
+    for movie in rev_col:
+        revenues.append(movie)
+    return revenues
+
+
 def test(dataset):
     # YEAR_VOCAB               = init_date_vocab(dataset, "year")
     # MONTH_VOCAB              = init_date_vocab(dataset, "month")
-    # GENRES_VOCAB             = init_genres_vocab(dataset)
+    GENRES_VOCAB             = init_genres_vocab(dataset)
     # CAST_VOCAB               = init_cast_vocab(dataset)
     # DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
     # KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
@@ -225,11 +237,16 @@ def test(dataset):
     # LANGUAGE_COUNT           = count_vocab(LANGUAGE_VOCAB)
     # COUNTRY_VOCAB            = init_country_vocab(dataset)
     # COUNTRY_COUNT            = count_vocab(COUNTRY_VOCAB)
+
+
+
     #geners_vocab_list(dataset)
+    #revnues = revnue_list(dataset)
     print("test ended")
 
 def main():
-    dataset = get_movies_db()
+    train = get_movies_db(TRAIN_CSV_PATH)
+    test = get_movies_db(TEST_CSV_PATH)
     test(dataset)
     print("end")
 

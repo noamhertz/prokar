@@ -2,11 +2,12 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 from sklearn.preprocessing import StandardScaler
 # %matplotlib notebook
-
+CSV_PATH = 'tutorial_datasets/cancer_dataset.csv'
 # let's load the cancer dataset, shuffle it and  speratre into train and test set
-dataset = pd.read_csv('./tutorial_datasets/cancer_dataset.csv')
+dataset = pd.read_csv(CSV_PATH)
 # print the number of rows in the data set
 number_of_rows = len(dataset)
 print("total samples: {}".format(number_of_rows))
