@@ -11,7 +11,8 @@ from datetime import datetime
 
 
 
-from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, geners_vocab_list, revenue_list
+from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, geners_vocab_list, \
+    get_number_list, turn_string_list_to_int, init_cast_vocab
 TRAIN_CSV_PATH = './datasets/train.csv'
 TEST_CSV_PATH = './datasets/test.csv'
 GENRE_THRESH = 5
@@ -85,7 +86,8 @@ def test1(dataset):
     data = w2v(GENRES_VOCAB)
     f_vectors, index2word = data.vectors, data.index2word
     worded_feature = listing_word_vectors(GENRES_VOCAB ,f_vectors, index2word)
-    target = revenue_list(dataset)
+    revenue = dataset["revenue"]
+    target = revenue_list(revenue)
     regressor = DecisionTreeRegressor(random_state=0)
     res = cross_val_score(regressor, worded_feature, target, cv=10)
     regressor.fit(data, target)
@@ -136,22 +138,30 @@ def get_dictionary(s):
 def main():
     #""" xgboost
 
-
-
-
     train = get_movies_db(TRAIN_CSV_PATH)
+    TR_CAST_VOCAB = init_cast_vocab(train)
+    tr_cast = dictioning_column(train["cast"])
     train = train
     train['genres'] = train['genres'].map(lambda x: sorted([d['name'] for d in get_dictionary(x)])).map(
         lambda x: ','.join(map(str, x)))
     p_train = train ['revenue']
-    train = train[['budget', 'popularity', 'runtime']]
+    cast_int_list = turn_string_list_to_int(tr_cast, TR_CAST_VOCAB)
+    train.insert(1, "INT LIST", cast_int_list)
+    train = train[['budget', 'popularity', 'runtime', 'INT LIST']]
+
+
+    ###############################################33 test
     test = get_movies_db(TEST_CSV_PATH)
     test = test
-
+    TS_CAST_VOCAB = init_cast_vocab(test)
+    ts_cast = dictioning_column(test["cast"])
     test['genres'] = test['genres'].map(lambda x: sorted([d['name'] for d in get_dictionary(x)])).map(
         lambda x: ','.join(map(str, x)))
     p_test = ['revenue']
-    test = test[['budget', 'popularity', 'runtime']]
+
+    cast_int_list = turn_string_list_to_int(ts_cast, TS_CAST_VOCAB)
+    test.insert(1, "INT LIST", cast_int_list)
+    test = test[['budget', 'popularity', 'runtime', 'INT LIST']]
     random_seed = 2019
     k = 10
     fold = list(KFold(k, shuffle=True, random_state=random_seed).split(train))
@@ -188,7 +198,7 @@ def main():
 
         print('')
 
-    print("fianl avg   err.", final_err)
-    print("fianl blend err.", np.sqrt(np.mean((val_pred - y)**2)))
+    print("final avg   err.", final_err)
+    print("final blend err.", np.sqrt(np.mean((val_pred - y)**2)))
 if __name__ == "__main__":
     main()

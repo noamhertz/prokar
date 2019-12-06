@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import ast
 from datetime import datetime as dt
+from gensim.test.utils import common_texts, get_tmpfile, datapath
+from gensim.models import Word2Vec, KeyedVectors
+
 TRAIN_CSV_PATH = './datasets/train.csv'
 TEST_CSV_PATH = './datasets/test.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
@@ -313,31 +316,39 @@ def createDB(dataset):
     runtime     = dataset["runtime"]
     popularity  = dataset["popularity"]
     revenue     = dataset["revenue"]
-    for movie_id in ids:
-        movieDB[movie_id] = {}
-        movieDB[movie_id]["genres"]         = get_name_list(genres, movie_id)
-        movieDB[movie_id]["cast"]           = get_cast_list(cast, movie_id)
-        movieDB[movie_id]["director"]       = get_director_list(directors, movie_id)
-        movieDB[movie_id]["keywords"]       = get_name_list(keywords, movie_id)
-        movieDB[movie_id]["prod_companies"] = get_prod_comps_list(prod_comps, movie_id)
-        movieDB[movie_id]["languages"]      = get_languages_list(languages, movie_id)
-        movieDB[movie_id]["countries"]      = get_name_list(countries, movie_id)
-        movieDB[movie_id]["is_collection"]  = get_is_collection_list(collections, movie_id)
-        movieDB[movie_id]["num_words"]      = get_num_words_list(titles, movie_id)
-        movieDB[movie_id]["release_year"]   = get_release_year_list(date, movie_id)
-        movieDB[movie_id]["release_month"]  = get_release_month_list(date, movie_id)
-        movieDB[movie_id]["weekday"]        = get_weekday_list(date, movie_id)
-        movieDB[movie_id]["budget"]         = get_number_list(budget, movie_id)
-        movieDB[movie_id]["runtime"]        = get_number_list(runtime, movie_id)
-        movieDB[movie_id]["popularity"]     = get_number_list(popularity, movie_id)
-        movieDB[movie_id]["revenue"]        = get_number_list(revenue, movie_id)
-    return movieDB
+    #for movie_id in ids:
+    #    movieDB[movie_id] = {}
+    #    movieDB[movie_id]["genres"]         = get_name_list(genres, movie_id)
+    #    movieDB[movie_id]["cast"]           = get_cast_list(cast, movie_id)
+    #    movieDB[movie_id]["director"]       = get_director_list(directors, movie_id)
+    #    movieDB[movie_id]["keywords"]       = get_name_list(keywords, movie_id)
+    #    movieDB[movie_id]["prod_companies"] = get_prod_comps_list(prod_comps, movie_id)
+    #    movieDB[movie_id]["languages"]      = get_languages_list(languages, movie_id)
+    #    movieDB[movie_id]["countries"]      = get_name_list(countries, movie_id)
+    #    movieDB[movie_id]["is_collection"]  = get_is_collection_list(collections, movie_id)
+    #    movieDB[movie_id]["num_words"]      = get_num_words_list(titles, movie_id)
+    #    movieDB[movie_id]["release_year"]   = get_release_year_list(date, movie_id)
+    #    movieDB[movie_id]["release_month"]  = get_release_month_list(date, movie_id)
+    #    movieDB[movie_id]["weekday"]        = get_weekday_list(date, movie_id)
+    #    movieDB[movie_id]["budget"]         = get_number_list(budget, movie_id)
+    #    movieDB[movie_id]["runtime"]        = get_number_list(runtime, movie_id)
+    #    movieDB[movie_id]["popularity"]     = get_number_list(popularity, movie_id)
+    #    movieDB[movie_id]["revenue"]        = get_number_list(revenue, movie_id)
+    return movieDB, cast
+
+def turn_string_list_to_int(feature_list, feature_vocab):
+    int_feature_list = [[] for i in range(len(feature_list))]
+    for record in feature_vocab:
+        for movie_number in feature_vocab[record]:
+            int_feature_list[movie_number-1].append(record)
+    return int_feature_list
+
 
 def test(dataset):
     # YEAR_VOCAB               = init_date_vocab(dataset, "year")
     # MONTH_VOCAB              = init_date_vocab(dataset, "month")
     # GENRES_VOCAB             = init_genres_vocab(dataset)
-    # CAST_VOCAB               = init_cast_vocab(dataset)
+    CAST_VOCAB                = init_cast_vocab(dataset)
     # DIRECTOR_VOCAB           = init_crew_vocab(dataset, ['Director'])
     # KEYWORDS_VOCAB           = init_keyword_vocab(dataset)
     # PRODUCTION_COMPANY_VOCAB = init_prod_vocab(dataset)
@@ -346,8 +357,12 @@ def test(dataset):
     # LANGUAGE_COUNT           = count_vocab(LANGUAGE_VOCAB)
     # COUNTRY_VOCAB            = init_country_vocab(dataset)
     # COUNTRY_COUNT            = count_vocab(COUNTRY_VOCAB)
-    DB = createDB(dataset)
+    DB, cast = createDB(dataset)
+    cast_int_list = turn_string_list_to_int(cast, CAST_VOCAB)
+    model = Word2Vec(cast_int_list, min_count=1, size=50, workers=3, window=3, sg=1)
+    #dataset.insert(2, "INT LIST" ,cast_int_list)
     #geners_vocab_list(dataset)
+    var = model.vocab
     print("test ended")
 
 def main():
