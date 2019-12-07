@@ -353,6 +353,20 @@ def count_popularity(feature_column, feature_vocab, filter_field=None, filter_va
     return poplarity_dict
 
 
+GENRES = 2
+def get_genres_list(genres_column):
+    genres_list = []
+    for movie in genres_column:
+        sub_genres_list = []
+        for idx, genre in enumerate(movie):
+            if idx == GENRES:
+                break
+            sub_genres_list.append(genre['name'])
+        sub_genres_list.sort()
+        genres_list.append(''.join(sub_genres_list))
+    return genres_list
+
+
 def createDB(dataset):
     movieDB = {}
     ids = dataset["id"]
@@ -414,9 +428,10 @@ def test(dataset):
     # COUNTRY_VOCAB            = init_country_vocab(dataset)
     # COUNTRY_COUNT            = count_vocab(COUNTRY_VOCAB)
     # DB, cast = createDB(dataset)
-    cast = dictioning_column(dataset["cast"])
-    cast_popularity_top5 = count_popularity(cast, CAST_VOCAB, top=5)
-    cast_popularity = count_popularity(cast, CAST_VOCAB)
+    genres = dictioning_column(dataset["genres"])
+    #cast_popularity_top5 = count_popularity(cast, CAST_VOCAB, top=5)
+    #cast_popularity = count_total_feature(cast, CAST_VOCAB)
+    genres_list = get_genres_list(genres)
     print("test ended")
 
 def main():
