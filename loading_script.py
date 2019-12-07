@@ -339,7 +339,7 @@ def count_total_feature(feature_column, filter_field=None, filter_value=None, to
 def count_popularity(feature_column, feature_vocab, filter_field=None, filter_value=None, top=LAREGST_INT):
     num_of_samples = len(feature_column)
     poplarity_dict = {}
-    total_count_of_movie =  count_total_feature(feature_column, filter_field=filter_field, filter_value=filter_value)
+    total_count_of_movie = count_total_feature(feature_column, filter_field=filter_field, filter_value=filter_value)
     count_appearances_feature = count_appearances(feature_column, feature_vocab, top=top)
     for key in count_appearances_feature:
         if top is not LAREGST_INT:

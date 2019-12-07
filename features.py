@@ -4,15 +4,6 @@ import loading_script as ls
 from datetime import datetime as dt
 TRAIN_CSV_PATH = './datasets/train.csv'
 
-def get_weekday(df):
-    list = []
-    for index, row in df.iterrows():
-        year  = str(row['release_year'])
-        month = str(row['release_month'])
-        day   = str(row['release_day'])
-        list.append(dt.strptime(year+month+day, '%Y%m%d').weekday())
-    return np.asarray(list)
-
 def fill_holes(df):
     df.loc[df['id'] == 16, 'revenue'] = 192864  # Skinning
     df.loc[df['id'] == 90, 'budget'] = 30000000  # Sommersby
@@ -147,6 +138,9 @@ def fill_holes(df):
 
     return df
 
+def dict2col(dict):
+    return np.asarray(list(dict.values()))
+
 def main():
     df = ls.get_movies_db(TRAIN_CSV_PATH)
 
@@ -155,24 +149,67 @@ def main():
     df['release_year'] = df['release_year']
     df.loc[(df['release_year'] <= 19) & (df['release_year'] < 100), "release_year"] += 2000
     df.loc[(df['release_year'] > 19) & (df['release_year'] < 100), "release_year"] += 1900
-    df['weekday'] = get_weekday(df)
+    releaseDate = pd.to_datetime(df['release_date'])
+    df['release_dayofweek'] = releaseDate.dt.dayofweek
+    df['release_quarter'] = releaseDate.dt.quarter
     df = df.drop(columns=['release_date'])
 
     # collection
     df['is_collection'] = 0
     df.loc[pd.isnull(df['belongs_to_collection']), 'is_collection'] = 1
-    # df.drop(columns=['belongs_to_collection'])
     df = df.drop(columns=['belongs_to_collection'])
 
+    # homepage
+    df['has_homepage'] = 0
+    df.loc[pd.isnull(df['homepage']), 'has_homepage'] = 1
+    df = df.drop(columns=['homepage'])
+
+    # genres
+    GENRES_VOCAB = ls.init_genres_vocab(df)
+    df['num_genres'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['genres'])))
+    df['genres_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['genres']), GENRES_VOCAB))
+    df = df.drop(columns=['genres'])
+
+    # keyword
+    KEYWORDS_VOCAB = ls.init_keyword_vocab(df)
+    df['num_keywords'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['Keywords'])))
+    df['keywords_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['Keywords']), KEYWORDS_VOCAB))
+    df = df.drop(columns=['Keywords'])
+
+    # production companies
+    PRODUCTION_COMPANY_VOCAB = ls.init_prod_vocab(df)
+    df['num_prod_companies'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_companies'])))
+    df['prod_companies_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_companies']), PRODUCTION_COMPANY_VOCAB))
+    df = df.drop(columns=['production_companies'])
+
+
+
+    # production countries
+    COUNTRY_VOCAB = ls.init_country_vocab(df)
+    df['num_prod_countries'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_countries'])))
+    df['prod_countries_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_countries']), COUNTRY_VOCAB))
+    df = df.drop(columns=['production_countries'])
+
+    # language
+    df['num_spoken_lang'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['spoken_languages'])))
+
     # cast
-    df['num_cast'] = np.asarray(list(ls.count_total_feature(ls.dictioning_column(df['cast'])).values()))
+    CAST_VOCAB = ls.init_cast_vocab(df)
+    df['num_cast'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['cast'])))
+    df['num_females'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['cast']), 'gender', 1))
+    df['is_lead_female'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['cast']), 'gender', 1, 1))
     df['num_cast'] = df['num_cast'].apply(lambda x: 20 if x == 0 else x)
+    df['cast_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['cast']), CAST_VOCAB))
+    df['top5_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['cast']), CAST_VOCAB, top=5))
+    df = df.drop(columns=['cast'])
 
     # budget
     df = fill_holes(df)
     df['inflation_budget'] = df['budget'] + df['budget'] * 1.8 / 100 * (2019 - df['release_year'])
     df['scaled_budget'] = np.log1p(df['budget'])
     df['budget_num_cast_ratio'] = df['budget'] / df['num_cast']
+    df['budget_runtime_ratio'] = df['budget'] / df['runtime']
+
 
 
     print("end")
