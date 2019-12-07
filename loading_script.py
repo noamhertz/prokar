@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sys
 import ast
 from datetime import datetime as dt
 from gensim.test.utils import common_texts, get_tmpfile, datapath
@@ -8,11 +9,12 @@ from gensim.models import Word2Vec, KeyedVectors
 TRAIN_CSV_PATH = './datasets/train.csv'
 TEST_CSV_PATH = './datasets/test.csv'
 CAST_NAME_REGEX = "(name\\':\ \\')([A-Z].+)(\\', \\'order)"
-CAST_MAX_PRIO = 3
+CAST_MAX_PRIO = 1000
 PROD_MAX_PRIO = 3
+LAREGST_INT = sys.maxsize
 
 #filter thresholds
-CAST_THRESH = 2
+CAST_THRESH = 0
 GENRE_THRESH = 5
 CREW_THRESH = 1
 PRODUCTION_THRESH = 10
@@ -299,6 +301,58 @@ def get_number_list(items,movie_id):
     item = items[movie_id-1]
     return [item]
 
+def count_appearances(feature_column, feature_vocab, top=LAREGST_INT):
+    counted_column = {}
+    for idx, movie in enumerate(feature_column):
+        counted_column[idx] = 0
+        count = 0
+        for top_count ,record in enumerate(movie):
+            if top_count == top:
+                break
+            if record["name"] not in feature_vocab:
+                continue
+            count += len(feature_vocab[record["name"]])
+        counted_column[idx] = count
+    return counted_column
+
+def count_total_feature(feature_column, filter_field=None, filter_value=None, top=LAREGST_INT):
+    total_number_of_value = {}
+    if filter_field is None:
+        for idx, movie in enumerate(feature_column):
+            if top == LAREGST_INT:
+                total_number_of_value[idx] = len(movie)
+            else:
+                total_number_of_value[idx] = top
+    else:
+        for idx, movie in enumerate(feature_column):
+            count_filtered = 0
+            for top_count, item in enumerate(movie):
+                if top_count == top:
+                    break
+                if item[filter_field] == filter_value:
+                    count_filtered += 1
+            total_number_of_value[idx] = count_filtered
+    return total_number_of_value
+
+
+def count_popularity(feature_column, feature_vocab, filter_field=None, filter_value=None, top=LAREGST_INT):
+    num_of_samples = len(feature_column)
+    poplarity_dict = {}
+    total_count_of_movie =  count_total_feature(feature_column, filter_field=filter_field, filter_value=filter_value)
+    count_appearances_feature = count_appearances(feature_column, feature_vocab, top=top)
+    for key in count_appearances_feature:
+        if top is not LAREGST_INT:
+            movie_normal_count = top
+        else:
+            movie_normal_count = total_count_of_movie[key]
+        normalization = movie_normal_count
+        if normalization == 0:
+            poplarity_dict[key] = count_appearances_feature[key]
+            continue
+        poplarity_dict[key] = count_appearances_feature[key]/normalization
+    return poplarity_dict
+
+
 def createDB(dataset):
     movieDB = {}
     ids = dataset["id"]
@@ -343,6 +397,8 @@ def turn_string_list_to_int(feature_list, feature_vocab):
             int_feature_list[movie_number-1].append(record)
     return int_feature_list
 
+def init_cast_features():
+    pass
 
 def test(dataset):
     # YEAR_VOCAB               = init_date_vocab(dataset, "year")
@@ -357,12 +413,10 @@ def test(dataset):
     # LANGUAGE_COUNT           = count_vocab(LANGUAGE_VOCAB)
     # COUNTRY_VOCAB            = init_country_vocab(dataset)
     # COUNTRY_COUNT            = count_vocab(COUNTRY_VOCAB)
-    DB, cast = createDB(dataset)
-    cast_int_list = turn_string_list_to_int(cast, CAST_VOCAB)
-    model = Word2Vec(cast_int_list, min_count=1, size=50, workers=3, window=3, sg=1)
-    #dataset.insert(2, "INT LIST" ,cast_int_list)
-    #geners_vocab_list(dataset)
-    var = model.vocab
+    # DB, cast = createDB(dataset)
+    cast = dictioning_column(dataset["cast"])
+    cast_popularity_top5 = count_popularity(cast, CAST_VOCAB, top=5)
+    cast_popularity = count_popularity(cast, CAST_VOCAB)
     print("test ended")
 
 def main():
