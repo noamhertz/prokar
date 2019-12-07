@@ -23,7 +23,7 @@ LANGUAGE_THRESH = 7
 COUNTRY_THRESH = 5
 DATE_THRESH = 2
 
-
+# General functions:
 def get_movies_db(path):
     pd.set_option("display.max_colwidth", 10000)
     dataset = pd.read_csv(path)
@@ -61,7 +61,7 @@ def dictioning_column(column):
     return dictioned_col
 
 
-
+# Vocab dicts
 def init_date_vocab(dataset, date_type):
     date_vocab = {}
     date_col = dataset["release_date"]
@@ -208,7 +208,8 @@ def count_vocab(vocab):
         appearance_vocab[item] = len(vocab[item])
     return sorted(appearance_vocab.items(), key=lambda x:x[1])
 
-def geners_vocab_list(dataset):
+
+def genres_vocab_list(dataset):
     genres_vocab = []
     genre_col = dictioning_column(dataset["genres"])
     count = 0

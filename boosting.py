@@ -11,8 +11,7 @@ from datetime import datetime
 
 
 
-from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, geners_vocab_list, \
-    get_number_list, turn_string_list_to_int, init_cast_vocab
+from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, genres_vocab_list, get_number_list
 TRAIN_CSV_PATH = './datasets/train.csv'
 TEST_CSV_PATH = './datasets/test.csv'
 GENRE_THRESH = 5
@@ -38,7 +37,7 @@ def build_sets(df):
 
 def logistic_reg(df):
     x_train, y_train, x_test, y_test = build_sets(df)
-    import pdb;
+    import pdb
     pdb.set_trace()
     clf = LogisticRegression(random_state=random_state)
     clf.fit(x_train, y_train)
@@ -82,7 +81,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeRegressor
 
 def test1(dataset):
-    GENRES_VOCAB = geners_vocab_list(dataset)
+    GENRES_VOCAB = genres_vocab_list(dataset)
     data = w2v(GENRES_VOCAB)
     f_vectors, index2word = data.vectors, data.index2word
     worded_feature = listing_word_vectors(GENRES_VOCAB ,f_vectors, index2word)
