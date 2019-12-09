@@ -36,8 +36,8 @@ project with karinsky
 ###cast top5 popularity	numeric DONE
 ###cast top5 female count	numeric DONE
 ###cast top1 female	bool DONE
-###num of producers	numeric TODO
-###producers popularity	numeric TODO
-###num of directors	numeric TODO
-###director popularity	numeric TODO
-###num of crew members	numeric TODO
+###num of producers	numeric DONE
+###producers popularity	numeric DONE
+###num of directors	numeric DONE
+###director popularity	numeric DONE
+###num of crew members	numeric DONE

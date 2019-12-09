@@ -182,7 +182,21 @@ def main():
     df['prod_companies_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_companies']), PRODUCTION_COMPANY_VOCAB))
     df = df.drop(columns=['production_companies'])
 
+    # producers
+    PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Producer'])
+    EXE_PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Executive Producer'])
+    num_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Producer'))
+    num_exe_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Executive Producer'))
+    df['num_producers'] = num_producers + num_exe_producers
+    producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), PRODUCER_VOCAB))
+    exe_producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), EXE_PRODUCER_VOCAB))
+    df['producers_popularity'] = producers_populariy + exe_producers_populariy
 
+    # crew & director
+    DIRECTOR_VOCAB = ls.init_crew_vocab(df, ['Director'])
+    df['num_crew'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew'])))
+    df['num_director'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Director'))
+    df['director_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), DIRECTOR_VOCAB))
 
     # production countries
     COUNTRY_VOCAB = ls.init_country_vocab(df)
