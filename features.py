@@ -145,58 +145,65 @@ def main():
     df = ls.get_movies_db(TRAIN_CSV_PATH)
 
     # dates
-    df[['release_month', 'release_day', 'release_year']] = df['release_date'].str.split('/', expand=True).replace(np.nan, 0).astype(int)
-    df['release_year'] = df['release_year']
-    df.loc[(df['release_year'] <= 19) & (df['release_year'] < 100), "release_year"] += 2000
-    df.loc[(df['release_year'] > 19) & (df['release_year'] < 100), "release_year"] += 1900
-    releaseDate = pd.to_datetime(df['release_date'])
-    df['release_dayofweek'] = releaseDate.dt.dayofweek
-    df['release_quarter'] = releaseDate.dt.quarter
-    df = df.drop(columns=['release_date'])
-
-    # collection
-    df['is_collection'] = 0
-    df.loc[pd.isnull(df['belongs_to_collection']), 'is_collection'] = 1
-    df = df.drop(columns=['belongs_to_collection'])
-
-    # homepage
-    df['has_homepage'] = 0
-    df.loc[pd.isnull(df['homepage']), 'has_homepage'] = 1
-    df = df.drop(columns=['homepage'])
-
-    # genres
-    GENRES_VOCAB = ls.init_genres_vocab(df)
-    df['num_genres'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['genres'])))
-    df['genres_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['genres']), GENRES_VOCAB))
-    df = df.drop(columns=['genres'])
-
-    # keyword
-    KEYWORDS_VOCAB = ls.init_keyword_vocab(df)
-    df['num_keywords'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['Keywords'])))
-    df['keywords_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['Keywords']), KEYWORDS_VOCAB))
-    df = df.drop(columns=['Keywords'])
-
-    # production companies
-    PRODUCTION_COMPANY_VOCAB = ls.init_prod_vocab(df)
-    df['num_prod_companies'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_companies'])))
-    df['prod_companies_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_companies']), PRODUCTION_COMPANY_VOCAB))
-    df = df.drop(columns=['production_companies'])
-
-    # producers
-    PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Producer'])
-    EXE_PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Executive Producer'])
-    num_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Producer'))
-    num_exe_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Executive Producer'))
-    df['num_producers'] = num_producers + num_exe_producers
-    producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), PRODUCER_VOCAB))
-    exe_producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), EXE_PRODUCER_VOCAB))
-    df['producers_popularity'] = producers_populariy + exe_producers_populariy
-
-    # crew & director
-    DIRECTOR_VOCAB = ls.init_crew_vocab(df, ['Director'])
-    df['num_crew'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew'])))
-    df['num_director'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Director'))
-    df['director_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), DIRECTOR_VOCAB))
+    # df[['release_month', 'release_day', 'release_year']] = df['release_date'].str.split('/', expand=True).replace(np.nan, 0).astype(int)
+    # df['release_year'] = df['release_year']
+    # df.loc[(df['release_year'] <= 19) & (df['release_year'] < 100), "release_year"] += 2000
+    # df.loc[(df['release_year'] > 19) & (df['release_year'] < 100), "release_year"] += 1900
+    # releaseDate = pd.to_datetime(df['release_date'])
+    # df['release_dayofweek'] = releaseDate.dt.dayofweek
+    # df['release_quarter'] = releaseDate.dt.quarter
+    # df = df.drop(columns=['release_date'])
+    #
+    # # collection
+    # df['is_collection'] = 0
+    # df.loc[pd.isnull(df['belongs_to_collection']), 'is_collection'] = 1
+    # df = df.drop(columns=['belongs_to_collection'])
+    #
+    # # homepage
+    # df['has_homepage'] = 0
+    # df.loc[pd.isnull(df['homepage']), 'has_homepage'] = 1
+    # df = df.drop(columns=['homepage'])
+    #
+    # # title
+    # df['original_title_letter_count'] = df['original_title'].str.len()
+    # df['original_title_word_count'] = df['original_title'].str.split().str.len()
+    #
+    # # overview
+    # df['overview_word_count'] = df['overview'].str.split().str.len()
+    #
+    # # genres
+    # GENRES_VOCAB = ls.init_genres_vocab(df)
+    # df['num_genres'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['genres'])))
+    # df['genres_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['genres']), GENRES_VOCAB))
+    # df = df.drop(columns=['genres'])
+    #
+    # # keyword
+    # KEYWORDS_VOCAB = ls.init_keyword_vocab(df)
+    # df['num_keywords'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['Keywords'])))
+    # df['keywords_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['Keywords']), KEYWORDS_VOCAB))
+    # df = df.drop(columns=['Keywords'])
+    #
+    # # production companies
+    # PRODUCTION_COMPANY_VOCAB = ls.init_prod_vocab(df)
+    # df['num_prod_companies'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_companies'])))
+    # df['prod_companies_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_companies']), PRODUCTION_COMPANY_VOCAB))
+    # df = df.drop(columns=['production_companies'])
+    #
+    # # producers
+    # PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Producer'])
+    # EXE_PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Executive Producer'])
+    # num_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Producer'))
+    # num_exe_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Executive Producer'))
+    # df['num_producers'] = num_producers + num_exe_producers
+    # producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), PRODUCER_VOCAB))
+    # exe_producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), EXE_PRODUCER_VOCAB))
+    # df['producers_popularity'] = producers_populariy + exe_producers_populariy
+    #
+    # # crew & director
+    # DIRECTOR_VOCAB = ls.init_crew_vocab(df, ['Director'])
+    # df['num_crew'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew'])))
+    # df['num_director'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Director'))
+    # df['director_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), DIRECTOR_VOCAB))
 
     # production countries
     COUNTRY_VOCAB = ls.init_country_vocab(df)
@@ -205,6 +212,8 @@ def main():
     df = df.drop(columns=['production_countries'])
 
     # language
+    language_list = list(ls.init_original_language_vocab(df).keys())
+    df['language'] = df['original_language'].apply(lambda x: language_list.index(x))
     df['num_spoken_lang'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['spoken_languages'])))
 
     # cast

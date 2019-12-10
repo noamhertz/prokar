@@ -12,10 +12,10 @@ project with karinsky
 ####num of genres	numeric DONE
 ###geners pop	numeric DONE
 ###homepage	bool DONE
-###original lang	enum TODO
-###Original title letter count	numeric TODO
-###Original title word count	numeric TODO
-###overview word count	numeric TODO
+###original lang	enum DONE
+###Original title letter count	numeric DONE
+###Original title word count	numeric DONE
+###overview word count	numeric DONE
 ###production companies popularity	numeric DONE
 ###production company count	numeric DONE
 ###production countries count	numeric DONE
@@ -28,7 +28,6 @@ project with karinsky
 ###runtime	numeric DONE
 ###budget/runtime	numeric DONE
 ###spoken lang count	numeric DONE
-###title letter count	numeric TODO
 ###keyword num	numeric DONE
 ###keyword popularity	numeric DONE
 ###cast count	numeric DONE

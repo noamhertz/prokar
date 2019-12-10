@@ -165,9 +165,9 @@ def init_prod_vocab(dataset):
                 prod_vocab[prod_comp["name"]].append(movie_id)
     return filter_vocabs(prod_vocab, PRODUCTION_THRESH)
 
-def init_language_vocab(dataset):
+def init_spoken_languages_vocab(dataset):
     lang_vocab = {}
-    lang_col = dictioning_column(dataset["spoken_languages"])
+    lang_col = dictioning_column(dataset['spoken_languages'])
     movie_id = 0
     for movie in lang_col:
         movie_id += 1
@@ -178,6 +178,17 @@ def init_language_vocab(dataset):
             else:
                 lang_vocab[lang["iso_639_1"]].append(movie_id)
     return filter_vocabs(lang_vocab, LANGUAGE_THRESH)
+
+def init_original_language_vocab(dataset):
+    original_lang_vocab = {}
+    movie_id = 0
+    for lang in dataset['original_language']:
+        movie_id += 1
+        if lang not in original_lang_vocab:
+            original_lang_vocab[lang] = [movie_id]
+        else:
+            original_lang_vocab[lang].append(movie_id)
+    return filter_vocabs(original_lang_vocab, 0)
 
 def init_country_vocab(dataset):
     country_vocab = {}
