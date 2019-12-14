@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import loading_script as ls
 from datetime import datetime as dt
+from datetime import timedelta as td
 TRAIN_CSV_PATH = './datasets/train.csv'
 
 def fill_holes(df):
@@ -141,75 +142,106 @@ def fill_holes(df):
 def dict2col(dict):
     return np.asarray(list(dict.values()))
 
+def create_high_budget_collection(df):
+    hbm = df.copy()
+    index_names = hbm[hbm['budget'] < 50000000].index
+    hbm.drop(index_names, inplace=True)
+    hbm.drop(hbm.columns.difference(['id', 'release_date']), 1, inplace=True)
+    return hbm
+
+def high_budget_adjacency(df, hbm):
+    hba_list = []
+    for index, row in df.iterrows():
+        release_date = row['release_date']
+        num_hba = 0
+        for index_hbm, row_hbm in hbm.iterrows():
+            release_date_hbm = row_hbm['release_date']
+            if (row['id'] == row_hbm['id']):
+                continue
+            elif (release_date == release_date_hbm):
+                num_hba += 1
+            elif (release_date > release_date_hbm and release_date < release_date_hbm + td(days=15)):
+                num_hba += 1
+            elif (release_date < release_date_hbm and release_date > release_date_hbm - td(days=8)):
+                num_hba += 1
+        hba_list.append(num_hba)
+    return np.asarray(hba_list)
+
+
 def main():
     df = ls.get_movies_db(TRAIN_CSV_PATH)
+    df = fill_holes(df)
+    df = df.drop(df[df['budget'] < 1000].index)
+
 
     # dates
-    # df[['release_month', 'release_day', 'release_year']] = df['release_date'].str.split('/', expand=True).replace(np.nan, 0).astype(int)
-    # df['release_year'] = df['release_year']
-    # df.loc[(df['release_year'] <= 19) & (df['release_year'] < 100), "release_year"] += 2000
-    # df.loc[(df['release_year'] > 19) & (df['release_year'] < 100), "release_year"] += 1900
-    # releaseDate = pd.to_datetime(df['release_date'])
-    # df['release_dayofweek'] = releaseDate.dt.dayofweek
-    # df['release_quarter'] = releaseDate.dt.quarter
-    # df = df.drop(columns=['release_date'])
-    #
-    # # collection
-    # df['is_collection'] = 0
-    # df.loc[pd.isnull(df['belongs_to_collection']), 'is_collection'] = 1
-    # df = df.drop(columns=['belongs_to_collection'])
-    #
-    # # homepage
-    # df['has_homepage'] = 0
-    # df.loc[pd.isnull(df['homepage']), 'has_homepage'] = 1
-    # df = df.drop(columns=['homepage'])
-    #
-    # # title
-    # df['original_title_letter_count'] = df['original_title'].str.len()
-    # df['original_title_word_count'] = df['original_title'].str.split().str.len()
-    #
-    # # overview
-    # df['overview_word_count'] = df['overview'].str.split().str.len()
-    #
-    # # genres
-    # GENRES_VOCAB = ls.init_genres_vocab(df)
-    # df['num_genres'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['genres'])))
-    # df['genres_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['genres']), GENRES_VOCAB))
-    # df = df.drop(columns=['genres'])
-    #
-    # # keyword
-    # KEYWORDS_VOCAB = ls.init_keyword_vocab(df)
-    # df['num_keywords'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['Keywords'])))
-    # df['keywords_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['Keywords']), KEYWORDS_VOCAB))
-    # df = df.drop(columns=['Keywords'])
-    #
-    # # production companies
-    # PRODUCTION_COMPANY_VOCAB = ls.init_prod_vocab(df)
-    # df['num_prod_companies'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_companies'])))
-    # df['prod_companies_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_companies']), PRODUCTION_COMPANY_VOCAB))
-    # df = df.drop(columns=['production_companies'])
-    #
-    # # producers
-    # PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Producer'])
-    # EXE_PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Executive Producer'])
-    # num_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Producer'))
-    # num_exe_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Executive Producer'))
-    # df['num_producers'] = num_producers + num_exe_producers
-    # producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), PRODUCER_VOCAB))
-    # exe_producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), EXE_PRODUCER_VOCAB))
-    # df['producers_popularity'] = producers_populariy + exe_producers_populariy
-    #
-    # # crew & director
-    # DIRECTOR_VOCAB = ls.init_crew_vocab(df, ['Director'])
-    # df['num_crew'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew'])))
-    # df['num_director'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Director'))
-    # df['director_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), DIRECTOR_VOCAB))
+    df[['release_month', 'release_day', 'release_year']] = df['release_date'].str.split('/', expand=True).replace(np.nan, 0).astype(int)
+    df['release_year'] = df['release_year']
+    df.loc[(df['release_year'] <= 19) & (df['release_year'] < 100), "release_year"] += 2000
+    df.loc[(df['release_year'] > 19) & (df['release_year'] < 100), "release_year"] += 1900
+    df['release_date'] = pd.to_datetime(df['release_date'])
+    df['release_dayofweek'] = df['release_date'].dt.dayofweek
+    df['release_quarter'] = df['release_date'].dt.quarter
+
+    hbm = create_high_budget_collection(df)
+    df['high_budget_adjacency'] = high_budget_adjacency(df, hbm)
+
+
+    # collection
+    df['is_collection'] = 0
+    df.loc[pd.isnull(df['belongs_to_collection']), 'is_collection'] = 1
+
+
+    # homepage
+    df['has_homepage'] = 0
+    df.loc[pd.isnull(df['homepage']), 'has_homepage'] = 1
+
+
+    # title
+    df['original_title_letter_count'] = df['original_title'].str.len()
+    df['original_title_word_count'] = df['original_title'].str.split().str.len()
+
+    # overview
+    df['overview_word_count'] = df['overview'].str.split().str.len()
+
+    # genres
+    GENRES_VOCAB = ls.init_genres_vocab(df)
+    df['num_genres'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['genres'])))
+    df['genres_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['genres']), GENRES_VOCAB))
+
+
+    # keyword
+    KEYWORDS_VOCAB = ls.init_keyword_vocab(df)
+    df['num_keywords'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['Keywords'])))
+    df['keywords_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['Keywords']), KEYWORDS_VOCAB))
+
+
+    # production companies
+    PRODUCTION_COMPANY_VOCAB = ls.init_prod_vocab(df)
+    df['num_prod_companies'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_companies'])))
+    df['prod_companies_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_companies']), PRODUCTION_COMPANY_VOCAB))
+
+
+    # producers
+    PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Producer'])
+    EXE_PRODUCER_VOCAB = ls.init_crew_vocab(df, ['Executive Producer'])
+    num_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Producer'))
+    num_exe_producers = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Executive Producer'))
+    df['num_producers'] = num_producers + num_exe_producers
+    producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), PRODUCER_VOCAB))
+    exe_producers_populariy = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), EXE_PRODUCER_VOCAB))
+    df['producers_popularity'] = producers_populariy + exe_producers_populariy
+
+    # crew & director
+    DIRECTOR_VOCAB = ls.init_crew_vocab(df, ['Director'])
+    df['num_crew'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew'])))
+    df['num_director'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['crew']), 'job', 'Director'))
+    df['director_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['crew']), DIRECTOR_VOCAB))
 
     # production countries
     COUNTRY_VOCAB = ls.init_country_vocab(df)
     df['num_prod_countries'] = dict2col(ls.count_total_feature(ls.dictioning_column(df['production_countries'])))
     df['prod_countries_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['production_countries']), COUNTRY_VOCAB))
-    df = df.drop(columns=['production_countries'])
 
     # language
     language_list = list(ls.init_original_language_vocab(df).keys())
@@ -224,15 +256,35 @@ def main():
     df['num_cast'] = df['num_cast'].apply(lambda x: 20 if x == 0 else x)
     df['cast_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['cast']), CAST_VOCAB))
     df['top5_popularity'] = dict2col(ls.count_popularity(ls.dictioning_column(df['cast']), CAST_VOCAB, top=5))
-    df = df.drop(columns=['cast'])
 
     # budget
-    df = fill_holes(df)
     df['inflation_budget'] = df['budget'] + df['budget'] * 1.8 / 100 * (2019 - df['release_year'])
     df['scaled_budget'] = np.log1p(df['budget'])
     df['budget_num_cast_ratio'] = df['budget'] / df['num_cast']
     df['budget_runtime_ratio'] = df['budget'] / df['runtime']
 
+    # drop
+    df = df.drop(columns=['cast'])
+    df = df.drop(columns=['release_date'])
+    df = df.drop(columns=['production_countries'])
+    df = df.drop(columns=['production_companies'])
+    df = df.drop(columns=['Keywords'])
+    df = df.drop(columns=['genres'])
+    df = df.drop(columns=['homepage'])
+    df = df.drop(columns=['belongs_to_collection'])
+    df = df.drop(columns=['imdb_id'])
+    df = df.drop(columns=['original_language'])
+    df = df.drop(columns=['original_title'])
+    df = df.drop(columns=['overview'])
+    df = df.drop(columns=['popularity'])
+    df = df.drop(columns=['spoken_languages'])
+    df = df.drop(columns=['status'])
+    df = df.drop(columns=['tagline'])
+    df = df.drop(columns=['title'])
+    df = df.drop(columns=['crew'])
+    df = df.drop(columns=['poster_path'])
+
+    df.to_csv(r'C:\Users\hertz\PycharmProjects\prokar\datasets\filtered_dataset.csv', index=None, header=True)
 
 
     print("end")
