@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
@@ -12,9 +13,9 @@ from datetime import datetime
 
 
 from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, genres_vocab_list, get_number_list
-TRAIN_CSV_PATH = './datasets/train.csv'
-TEST_CSV_PATH = './datasets/test.csv'
-GENRE_THRESH = 5
+filename = os.path.join('.', '/datasets/filtered_dataset.csv')
+TRAIN_CSV_PATH = './datasets/filtered_dataset.csv'
+
 
 def build_sets(df):
     x = df[['director', 'genres']].values
@@ -58,22 +59,6 @@ def w2v(column):
     wv_from_bin = KeyedVectors.load_word2vec_format(datapath("euclidean_vectors.bin"), binary=True)
     return wv
 
-'''
-def listing_word_vectors(f_col, f_vector, f_index2word):
-    worderd_column = []
-    for movie_id, movie in enumerate(f_col):
-        worderd_column.append([])
-        for item in movie:
-            for word_id, word in enumerate(f_index2word):
-                if item == word:
-                    worderd_column[movie_id].append(f_vector[word_id])
-                else:
-                    worderd_column[movie_id].append(np.zeros(len(f_vector[word_id])))
-    return worderd_column
-'''
-
-
-
 
 # decision tree
 from sklearn.datasets import load_boston
@@ -98,6 +83,7 @@ import xgboost as xgb
 random_seed = 2019
 k = 10
 np.random.seed(random_seed)
+
 def xgb_model(trn_x, trn_y, val_x, val_y, test, verbose):
     params = {'objective': 'reg:linear',
               'eta': 0.01,
@@ -122,6 +108,7 @@ def xgb_model(trn_x, trn_y, val_x, val_y, test, verbose):
     val_pred = model.predict(xgb.DMatrix(val_x), ntree_limit=model.best_ntree_limit)
     test_pred = model.predict(xgb.DMatrix(test), ntree_limit=model.best_ntree_limit)
 
+
     return {'val': val_pred, 'test': test_pred, 'error': record['valid']['rmse'][best_idx],
             'importance': [i for k, i in model.get_score().items()]}
 
@@ -133,34 +120,20 @@ def get_dictionary(s):
         d = {}
     return d
 
+def do_xgb(df):
+    number_of_rows = len(df)
+    from sklearn.model_selection import train_test_split
 
-def main():
-    #""" xgboost
-
-    train = get_movies_db(TRAIN_CSV_PATH)
-    TR_CAST_VOCAB = init_cast_vocab(train)
-    tr_cast = dictioning_column(train["cast"])
-    train = train
-    train['genres'] = train['genres'].map(lambda x: sorted([d['name'] for d in get_dictionary(x)])).map(
-        lambda x: ','.join(map(str, x)))
-    p_train = train ['revenue']
-    cast_int_list = turn_string_list_to_int(tr_cast, TR_CAST_VOCAB)
-    train.insert(1, "INT LIST", cast_int_list)
-    train = train[['budget', 'popularity', 'runtime', 'INT LIST']]
-
-
+    train, test = train_test_split(df, test_size=0.2)
+    num_train = int(0.8 * number_of_rows)
+    rand_gen = np.random.RandomState(0)
+    NORMAL = 100000000
+    p_train = train['revenue'].values/NORMAL
+    test['revenue'] = test['revenue'].values/NORMAL
+    # features_train = train.loc[:, df.columns != 'revenue']
     ###############################################33 test
-    test = get_movies_db(TEST_CSV_PATH)
-    test = test
-    TS_CAST_VOCAB = init_cast_vocab(test)
-    ts_cast = dictioning_column(test["cast"])
-    test['genres'] = test['genres'].map(lambda x: sorted([d['name'] for d in get_dictionary(x)])).map(
-        lambda x: ','.join(map(str, x)))
-    p_test = ['revenue']
-
-    cast_int_list = turn_string_list_to_int(ts_cast, TS_CAST_VOCAB)
-    test.insert(1, "INT LIST", cast_int_list)
-    test = test[['budget', 'popularity', 'runtime', 'INT LIST']]
+    # p_test = test['revenue']
+    # features_test = test.loc[:, df.columns != 'revenue']
     random_seed = 2019
     k = 10
     fold = list(KFold(k, shuffle=True, random_state=random_seed).split(train))
@@ -177,27 +150,51 @@ def main():
         trn_y = y[trn]
         val_x = train.loc[val, :]
         val_y = y[val]
-
+        ######################## real
         fold_val_pred = []
         fold_test_pred = []
         fold_err = []
 
         start = datetime.now()
         result = xgb_model(trn_x, trn_y, val_x, val_y, test, verbose=False)
-        fold_val_pred.append(result['val']*0.2)
-        fold_test_pred.append(result['test']*0.2)
+        fold_val_pred.append(result['val'] * 0.2)
+        fold_test_pred.append(result['test'] * 0.2)
         fold_err.append(result['error'])
-        print("xgb model.", "{0:.5f}".format(result['error']), '(' + str(int((datetime.now()-start).seconds/60)) + 'm)')
-        test_pred += np.mean(np.array(fold_test_pred), axis = 0) / k
+        print("xgb model.", "{0:.5f}".format(result['error']),
+              '(' + str(int((datetime.now() - start).seconds / 60)) + 'm)')
+        test_pred += np.mean(np.array(fold_test_pred), axis=0) / k
         final_err += (sum(fold_err) / len(fold_err)) / k
 
         print("---------------------------")
         print("avg   err.", "{0:.5f}".format(sum(fold_err) / len(fold_err)))
-        print("blend err.", "{0:.5f}".format(np.sqrt(np.mean((np.mean(np.array(fold_val_pred), axis = 0) - val_y)**2))))
+        print("blend err.", "{0:.5f}".format(np.sqrt(np.mean((np.mean(np.array(fold_val_pred), axis=0) - val_y) ** 2))))
 
         print('')
 
     print("final avg   err.", final_err)
-    print("final blend err.", np.sqrt(np.mean((val_pred - y)**2)))
+    print("final blend err.", np.sqrt(np.mean((val_pred - y) ** 2)))
+
+
+def build_diff_df(df):
+    temp_df = df
+    df_without_cast = temp_df.drop(['cast_popularity', 'top5_popularity', 'num_females', 'is_lead_female'], axis=1)
+    df_without_crew = temp_df.drop(['num_crew', 'num_director', 'director_popularity'], axis=1)
+    df_sparse = temp_df[['id', 'budget', 'revenue', 'release_year', 'genres_popularity']]
+    df_without_budget = temp_df.drop(['budget'], axis=1)
+    return [(df, 'all features'), (df_without_cast, 'without cast'),
+            (df_without_crew, 'without crew'), (df_sparse, 'sparse features'), (df_without_budget, 'no budget')]
+
+def main():
+    #""" xgboost
+    ###
+    import sys
+    orig_stdout = sys.stdout
+    dataframe = get_movies_db(TRAIN_CSV_PATH)
+    df_list = build_diff_df(dataframe)
+    #sys.stdout = open("results.txt", "w")
+    for df, df_name in df_list:
+        print(df_name)
+        do_xgb(df)
+
 if __name__ == "__main__":
     main()
