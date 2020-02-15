@@ -1,0 +1,67 @@
+all features
+[0]	train-rmse:16.312	valid-rmse:16.4645
+Multiple eval metrics have been passed: 'valid-rmse' will be used for early stopping.
+
+Will train until valid-rmse hasn't improved in 200 rounds.
+[200]	train-rmse:2.57664	valid-rmse:2.84331
+[400]	train-rmse:1.02622	valid-rmse:1.56584
+[600]	train-rmse:0.792938	valid-rmse:1.49802
+[800]	train-rmse:0.663762	valid-rmse:1.49457
+Stopping. Best iteration:
+[696]	train-rmse:0.728075	valid-rmse:1.4929
+
+--------------------------------------------------------------
+without cast
+[0]	train-rmse:16.3117	valid-rmse:16.4644
+Multiple eval metrics have been passed: 'valid-rmse' will be used for early stopping.
+
+Will train until valid-rmse hasn't improved in 200 rounds.
+[200]	train-rmse:2.5791	valid-rmse:2.83363
+[400]	train-rmse:1.04468	valid-rmse:1.56692
+[600]	train-rmse:0.814922	valid-rmse:1.50819
+[800]	train-rmse:0.682199	valid-rmse:1.50969
+Stopping. Best iteration:
+[617]	train-rmse:0.802902	valid-rmse:1.50641
+
+--------------------------------------------------------------
+without crew
+[0]	train-rmse:16.3117	valid-rmse:16.4644
+Multiple eval metrics have been passed: 'valid-rmse' will be used for early stopping.
+
+Will train until valid-rmse hasn't improved in 200 rounds.
+[200]	train-rmse:2.57893	valid-rmse:2.83608
+[400]	train-rmse:1.03855	valid-rmse:1.56318
+[600]	train-rmse:0.796802	valid-rmse:1.50037
+[800]	train-rmse:0.66368	valid-rmse:1.49637
+[1000]	train-rmse:0.572317	valid-rmse:1.49884
+Stopping. Best iteration:
+[812]	train-rmse:0.658257	valid-rmse:1.49592
+
+--------------------------------------------------------------
+sparse features
+[0]	train-rmse:16.3118	valid-rmse:16.4649
+Multiple eval metrics have been passed: 'valid-rmse' will be used for early stopping.
+
+Will train until valid-rmse hasn't improved in 200 rounds.
+[200]	train-rmse:2.8015	valid-rmse:2.94483
+[400]	train-rmse:1.49307	valid-rmse:1.7173
+[600]	train-rmse:1.3275	valid-rmse:1.65893
+[800]	train-rmse:1.22341	valid-rmse:1.67092
+Stopping. Best iteration:
+[635]	train-rmse:1.30798	valid-rmse:1.65744
+
+--------------------------------------------------------------
+no budget
+[0]	train-rmse:16.3121	valid-rmse:16.465
+Multiple eval metrics have been passed: 'valid-rmse' will be used for early stopping.
+
+Will train until valid-rmse hasn't improved in 200 rounds.
+[200]	train-rmse:2.58021	valid-rmse:2.83638
+[400]	train-rmse:1.03275	valid-rmse:1.56088
+[600]	train-rmse:0.792672	valid-rmse:1.49177
+[800]	train-rmse:0.662728	valid-rmse:1.49216
+Stopping. Best iteration:
+[682]	train-rmse:0.734992	valid-rmse:1.48907
+
+--------------------------------------------------------------
+finish

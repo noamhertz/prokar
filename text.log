@@ -1,0 +1,316 @@
+total samples: 2185
+all features
+1 fold.    RMSE
+xgb model. 1.20271 (0m)
+---------------------------
+avg   err. 1.20271
+blend err. 1.35057
+
+2 fold.    RMSE
+xgb model. 0.99869 (0m)
+---------------------------
+avg   err. 0.99869
+blend err. 1.12186
+
+3 fold.    RMSE
+xgb model. 1.42524 (0m)
+---------------------------
+avg   err. 1.42524
+blend err. 1.57322
+
+4 fold.    RMSE
+xgb model. 1.83627 (0m)
+---------------------------
+avg   err. 1.83627
+blend err. 2.03429
+
+5 fold.    RMSE
+xgb model. 1.96969 (0m)
+---------------------------
+avg   err. 1.96969
+blend err. 2.16048
+
+6 fold.    RMSE
+xgb model. 1.37167 (0m)
+---------------------------
+avg   err. 1.37167
+blend err. 1.52321
+
+7 fold.    RMSE
+xgb model. 1.77271 (0m)
+---------------------------
+avg   err. 1.77271
+blend err. 1.91229
+
+8 fold.    RMSE
+xgb model. 1.37387 (0m)
+---------------------------
+avg   err. 1.37387
+blend err. 1.52925
+
+9 fold.    RMSE
+xgb model. 1.49422 (0m)
+---------------------------
+avg   err. 1.49422
+blend err. 1.65617
+
+10 fold.    RMSE
+xgb model. 1.45025 (0m)
+---------------------------
+avg   err. 1.45025
+blend err. 1.60284
+
+final avg   err. 1.4895325
+final blend err. 1.744761113381324
+without cast
+1 fold.    RMSE
+xgb model. 1.20129 (0m)
+---------------------------
+avg   err. 1.20129
+blend err. 1.35082
+
+2 fold.    RMSE
+xgb model. 1.00009 (0m)
+---------------------------
+avg   err. 1.00009
+blend err. 1.12197
+
+3 fold.    RMSE
+xgb model. 1.43271 (0m)
+---------------------------
+avg   err. 1.43271
+blend err. 1.57758
+
+4 fold.    RMSE
+xgb model. 1.84952 (0m)
+---------------------------
+avg   err. 1.84952
+blend err. 2.04811
+
+5 fold.    RMSE
+xgb model. 1.99411 (0m)
+---------------------------
+avg   err. 1.99411
+blend err. 2.16714
+
+6 fold.    RMSE
+xgb model. 1.39267 (0m)
+---------------------------
+avg   err. 1.39267
+blend err. 1.53419
+
+7 fold.    RMSE
+xgb model. 1.77200 (0m)
+---------------------------
+avg   err. 1.77200
+blend err. 1.91349
+
+8 fold.    RMSE
+xgb model. 1.37482 (0m)
+---------------------------
+avg   err. 1.37482
+blend err. 1.52956
+
+9 fold.    RMSE
+xgb model. 1.50257 (0m)
+---------------------------
+avg   err. 1.50257
+blend err. 1.66241
+
+10 fold.    RMSE
+xgb model. 1.45452 (0m)
+---------------------------
+avg   err. 1.45452
+blend err. 1.60301
+
+final avg   err. 1.4974298000000001
+final blend err. 1.744761113381324
+without crew
+1 fold.    RMSE
+xgb model. 1.20043 (0m)
+---------------------------
+avg   err. 1.20043
+blend err. 1.34945
+
+2 fold.    RMSE
+xgb model. 1.00272 (0m)
+---------------------------
+avg   err. 1.00272
+blend err. 1.12574
+
+3 fold.    RMSE
+xgb model. 1.42044 (0m)
+---------------------------
+avg   err. 1.42044
+blend err. 1.56856
+
+4 fold.    RMSE
+xgb model. 1.83432 (0m)
+---------------------------
+avg   err. 1.83432
+blend err. 2.03910
+
+5 fold.    RMSE
+xgb model. 1.97721 (0m)
+---------------------------
+avg   err. 1.97721
+blend err. 2.16666
+
+6 fold.    RMSE
+xgb model. 1.37864 (0m)
+---------------------------
+avg   err. 1.37864
+blend err. 1.52857
+
+7 fold.    RMSE
+xgb model. 1.76860 (0m)
+---------------------------
+avg   err. 1.76860
+blend err. 1.91064
+
+8 fold.    RMSE
+xgb model. 1.37354 (0m)
+---------------------------
+avg   err. 1.37354
+blend err. 1.52390
+
+9 fold.    RMSE
+xgb model. 1.51029 (0m)
+---------------------------
+avg   err. 1.51029
+blend err. 1.66264
+
+10 fold.    RMSE
+xgb model. 1.44604 (0m)
+---------------------------
+avg   err. 1.44604
+blend err. 1.59812
+
+final avg   err. 1.4912232
+final blend err. 1.744761113381324
+sparse features
+1 fold.    RMSE
+xgb model. 1.18976 (0m)
+---------------------------
+avg   err. 1.18976
+blend err. 1.33593
+
+2 fold.    RMSE
+xgb model. 1.00827 (0m)
+---------------------------
+avg   err. 1.00827
+blend err. 1.12803
+
+3 fold.    RMSE
+xgb model. 1.41096 (0m)
+---------------------------
+avg   err. 1.41096
+blend err. 1.56328
+
+4 fold.    RMSE
+xgb model. 1.82337 (0m)
+---------------------------
+avg   err. 1.82337
+blend err. 2.04211
+
+5 fold.    RMSE
+xgb model. 1.95220 (0m)
+---------------------------
+avg   err. 1.95220
+blend err. 2.16114
+
+6 fold.    RMSE
+xgb model. 1.37150 (0m)
+---------------------------
+avg   err. 1.37150
+blend err. 1.52266
+
+7 fold.    RMSE
+xgb model. 1.73164 (0m)
+---------------------------
+avg   err. 1.73164
+blend err. 1.89652
+
+8 fold.    RMSE
+xgb model. 1.36792 (0m)
+---------------------------
+avg   err. 1.36792
+blend err. 1.52704
+
+9 fold.    RMSE
+xgb model. 1.49527 (0m)
+---------------------------
+avg   err. 1.49527
+blend err. 1.65328
+
+10 fold.    RMSE
+xgb model. 1.46800 (0m)
+---------------------------
+avg   err. 1.46800
+blend err. 1.61003
+
+final avg   err. 1.4818885
+final blend err. 1.744761113381324
+no budget
+1 fold.    RMSE
+xgb model. 1.20389 (0m)
+---------------------------
+avg   err. 1.20389
+blend err. 1.35068
+
+2 fold.    RMSE
+xgb model. 1.00006 (0m)
+---------------------------
+avg   err. 1.00006
+blend err. 1.12191
+
+3 fold.    RMSE
+xgb model. 1.42544 (0m)
+---------------------------
+avg   err. 1.42544
+blend err. 1.57115
+
+4 fold.    RMSE
+xgb model. 1.83321 (0m)
+---------------------------
+avg   err. 1.83321
+blend err. 2.03920
+
+5 fold.    RMSE
+xgb model. 1.97656 (0m)
+---------------------------
+avg   err. 1.97656
+blend err. 2.16617
+
+6 fold.    RMSE
+xgb model. 1.37256 (0m)
+---------------------------
+avg   err. 1.37256
+blend err. 1.52772
+
+7 fold.    RMSE
+xgb model. 1.77755 (0m)
+---------------------------
+avg   err. 1.77755
+blend err. 1.91516
+
+8 fold.    RMSE
+xgb model. 1.37657 (0m)
+---------------------------
+avg   err. 1.37657
+blend err. 1.52517
+
+9 fold.    RMSE
+xgb model. 1.50305 (0m)
+---------------------------
+avg   err. 1.50305
+blend err. 1.66098
+
+10 fold.    RMSE
+xgb model. 1.44282 (0m)
+---------------------------
+avg   err. 1.44282
+blend err. 1.59804
+
+final avg   err. 1.4911718000000003
+final blend err. 1.744761113381324
