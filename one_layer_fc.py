@@ -4,8 +4,11 @@ from math import sqrt
 
 tf.compat.v1.disable_eager_execution()
 
+<<<<<<< HEAD
 factor = 15.19*3
 
+=======
+>>>>>>> e1539b13bba020dcfbde06c76c5440b4eb00eac8
 # Predicts time-series values using fully-convolutional neural network.
 # Args: (train_set, test_set) - DataFrames with shingled time-series. (train_labels, test_labels) - DataFrames with the next value of the time series.
 #       step - Training rate. max_epochs - Number of training epochs. batch_size - Training batch size. activation - Tensorflow activation function. reg_coeff - Regularization coefficient.
@@ -32,7 +35,11 @@ def regression(train_set, test_set, train_labels, test_labels, step=0.001, max_e
             for batch in range(int(len(train_set.index) / batch_size)):
                 sess.run(train, feed_dict={x: train_set.iloc[batch*batch_size:batch*batch_size+batch_size], y: train_labels.iloc[batch*batch_size:batch*batch_size+batch_size]})
             if epoch % 20 == 0:
+<<<<<<< HEAD
                 print("epoch: %g, train loss: %g" % (epoch, factor*loss.eval(feed_dict={x: train_set, y: train_labels})))
+=======
+                print("epoch: %g, train loss: %g" % (epoch, loss.eval(feed_dict={x: train_set, y: train_labels})))
+>>>>>>> e1539b13bba020dcfbde06c76c5440b4eb00eac8
 
 
         print("Training finished and saved. Calculating results...")
