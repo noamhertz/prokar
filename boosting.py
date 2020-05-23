@@ -1,178 +1,69 @@
+import pandas as pd
 import numpy as np
 import os
-import pandas as pd
+import csv
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import AdaBoostClassifier
-from gensim.test.utils import common_texts, get_tmpfile, datapath
-from gensim.models import Word2Vec, KeyedVectors
-from datetime import datetime
-
-
-
-from loading_script import get_movies_db, dictioning_list, dictioning_column, init_genres_vocab, genres_vocab_list, get_number_list
-filename = os.path.join('.', '/datasets/filtered_dataset.csv')
-TRAIN_CSV_PATH = './datasets/filtered_dataset.csv'
-
-
-def build_sets(df):
-    x = df[['director', 'genres']].values
-    y = df['Revenue'].values
-    number_of_rows = len(df)
-    num_train = int(0.8 * number_of_rows)
-
-    rand_gen = np.random.RandomState(0)
-    shuffled_indices = rand_gen.permutation(np.arange(len(x)))
-
-    x_train = x[shuffled_indices[:num_train]]
-    y_train = y[shuffled_indices[:num_train]]
-    x_test = x[shuffled_indices[num_train:]]
-    y_test = y[shuffled_indices[num_train:]]
-    # pre-process - standartization
-    import pdb;
-    pdb.set_trace()
-    return x_train, y_train, x_test, y_test
-
-
-def logistic_reg(df):
-    x_train, y_train, x_test, y_test = build_sets(df)
-    import pdb
-    pdb.set_trace()
-    clf = LogisticRegression(random_state=random_state)
-    clf.fit(x_train, y_train)
-    y_pred = clf.predict(x_test)
-    print(clf.__class__.__name__, accuracy_score(y_test, y_pred))
-
-def w2v(column):
-    path = get_tmpfile("word2vec.model")
-    model = Word2Vec(column, size=100, window=5, min_count=1, workers=4)  # movieDB[movie]
-    model.save("word2vec.model")
-    model = Word2Vec.load("word2vec.model")
-    trained = model.train([["Family", "Comedy"]], total_examples=1, epochs=1)
-    path = get_tmpfile("wordvectors.kv")
-    model.wv.save(path)
-    wv = KeyedVectors.load(path, mmap='r')
-    vector = wv['Comedy']
-    wv_from_text = KeyedVectors.load_word2vec_format(datapath('word2vec_pre_kv_c'), binary=False)
-    wv_from_bin = KeyedVectors.load_word2vec_format(datapath("euclidean_vectors.bin"), binary=True)
-    return wv
-
-
-# decision tree
-from sklearn.datasets import load_boston
-from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeRegressor
-
-def test1(dataset):
-    GENRES_VOCAB = genres_vocab_list(dataset)
-    data = w2v(GENRES_VOCAB)
-    f_vectors, index2word = data.vectors, data.index2word
-    worded_feature = listing_word_vectors(GENRES_VOCAB ,f_vectors, index2word)
-    revenue = dataset["revenue"]
-    target = revenue_list(revenue)
-    regressor = DecisionTreeRegressor(random_state=0)
-    res = cross_val_score(regressor, worded_feature, target, cv=10)
-    regressor.fit(data, target)
-    print("end of test")
-
-
-from sklearn.model_selection import KFold
+plt.style.use('ggplot')
 import xgboost as xgb
-random_seed = 2019
-k = 10
-np.random.seed(random_seed)
+from sklearn.model_selection import train_test_split
+import warnings
+warnings.filterwarnings("ignore")
 
-def xgb_model(trn_x, trn_y, val_x, val_y, test, verbose):
-    params = {'objective': 'reg:linear',
-              'eta': 0.01,
-              'max_depth': 6,
-              'subsample': 0.6,
-              'colsample_bytree': 0.7,
+def do_boosting(df, df_name, xgb_df, xgb_df_f):
+    tot_rows = df.shape[0]
+    train_size = int(tot_rows*0.8)
+    train = df[:train_size]
+    test = df[train_size:]
+
+    X = train
+    X = X.drop(['revenue'], axis=1)
+    y = train.revenue.apply(np.log1p)
+
+    X_predict = test
+    X_predict = X_predict.drop(['revenue'], axis=1)
+    y_predict = test.revenue.apply(np.log1p)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=12, shuffle=True)
+    params = {'objective': 'reg:squarederror',
+              'eta': 0.02,
+              'max_depth': 9,
+              'min_child_weight': 3,
+              'subsample': 0.8,
+              'colsample_bytree': 0.8,
+              'colsample_bylevel': 0.50,
+              'gamma': 1.7,
               'eval_metric': 'rmse',
-              'seed': random_seed,
-              'silent': True,
+              'seed': 12,
+              'silent': True
               }
-
-    record = dict()
-    model = xgb.train(params
-                      , xgb.DMatrix(trn_x, trn_y)
-                      , 100000
-                      , [(xgb.DMatrix(trn_x, trn_y), 'train'), (xgb.DMatrix(val_x, val_y), 'valid')]
-                      , verbose_eval=verbose
-                      , early_stopping_rounds=500
-                      , callbacks=[xgb.callback.record_evaluation(record)])
-    best_idx = np.argmin(np.array(record['valid']['rmse']))
-
-    val_pred = model.predict(xgb.DMatrix(val_x), ntree_limit=model.best_ntree_limit)
-    test_pred = model.predict(xgb.DMatrix(test), ntree_limit=model.best_ntree_limit)
-
-
-    return {'val': val_pred, 'test': test_pred, 'error': record['valid']['rmse'][best_idx],
-            'importance': [i for k, i in model.get_score().items()]}
-
-
-def get_dictionary(s):
-    try:
-        d = eval(s)
-    except:
-        d = {}
-    return d
-
-def do_xgb(df):
-    number_of_rows = len(df)
-    from sklearn.model_selection import train_test_split
-
-    train, test = train_test_split(df, test_size=0.2)
-    num_train = int(0.8 * number_of_rows)
-    rand_gen = np.random.RandomState(0)
-    NORMAL = 100000000
-    p_train = train['revenue'].values/NORMAL
-    test['revenue'] = test['revenue'].values/NORMAL
-    # features_train = train.loc[:, df.columns != 'revenue']
-    ###############################################33 test
-    # p_test = test['revenue']
-    # features_test = test.loc[:, df.columns != 'revenue']
-    random_seed = 2019
-    k = 10
-    fold = list(KFold(k, shuffle=True, random_state=random_seed).split(train))
-    np.random.seed(random_seed)
-    result_dict = dict()
-    val_pred = np.zeros(train.shape[0])
-    test_pred = np.zeros(test.shape[0])
-    final_err = 0
-    verbose = False
-    for i, (trn, val) in enumerate(fold):
-        print(i + 1, "fold.    RMSE")
-        y = p_train
-        trn_x = train.loc[trn, :]
-        trn_y = y[trn]
-        val_x = train.loc[val, :]
-        val_y = y[val]
-        ######################## real
-        fold_val_pred = []
-        fold_test_pred = []
-        fold_err = []
-
-        start = datetime.now()
-        result = xgb_model(trn_x, trn_y, val_x, val_y, test, verbose=False)
-        fold_val_pred.append(result['val'] * 0.2)
-        fold_test_pred.append(result['test'] * 0.2)
-        fold_err.append(result['error'])
-        print("xgb model.", "{0:.5f}".format(result['error']),
-              '(' + str(int((datetime.now() - start).seconds / 60)) + 'm)')
-        test_pred += np.mean(np.array(fold_test_pred), axis=0) / k
-        final_err += (sum(fold_err) / len(fold_err)) / k
-
-        print("---------------------------")
-        print("avg   err.", "{0:.5f}".format(sum(fold_err) / len(fold_err)))
-        print("blend err.", "{0:.5f}".format(np.sqrt(np.mean((np.mean(np.array(fold_val_pred), axis=0) - val_y) ** 2))))
-
-        print('')
-
-    print("final avg   err.", final_err)
-    print("final blend err.", np.sqrt(np.mean((val_pred - y) ** 2)))
+    xgb_data = [(xgb.DMatrix(X_train, y_train), 'train'), (xgb.DMatrix(X_test, y_test), 'valid')]
+    xgb_model = xgb.train(params,
+                          xgb.DMatrix(X_train, y_train),
+                          5000,
+                          xgb_data,
+                          verbose_eval=200,
+                          early_stopping_rounds=200)
+    xgb_model_full = xgb.XGBRegressor(objective='reg:squarederror',
+                                      eta=0.02,
+                                      max_depth=9,
+                                      min_child_weight=3,
+                                      subsample=0.8,
+                                      colsample_bytree=0.8,
+                                      colsample_bylevel=0.50,
+                                      gamma=1.7,
+                                      eval_metric='rmse',
+                                      seed=12, n_estimators=3000)
+    xgb_model_full.fit(X.values, y)
+    f_importance = xgb_model_full.feature_importances_
+    xgb_pred = np.expm1(xgb_model.predict(xgb.DMatrix(X_predict), ntree_limit=xgb_model.best_ntree_limit))
+    xgb_pred_f = np.expm1(xgb_model_full.predict(X_predict.values))
+    if xgb_df.empty:
+        xgb_df = pd.concat([xgb_df, pd.DataFrame({'id': test.id, 'revenue_%s' % df_name: xgb_pred})])
+        xgb_df_f = pd.concat([xgb_df_f, pd.DataFrame({'id': test.id, 'revenue_%s' % df_name: xgb_pred_f})])
+    else:
+        xgb_df = pd.merge(xgb_df, pd.DataFrame({'id': test.id, 'revenue_%s' % df_name: xgb_pred}), on='id')
+        xgb_df_f = pd.merge(xgb_df_f, pd.DataFrame({'id': test.id, 'revenue_%s' % df_name: xgb_pred_f}), on='id')
+    return xgb_df, xgb_df_f, f_importance
 
 
 def build_diff_df(df):
@@ -180,21 +71,39 @@ def build_diff_df(df):
     df_without_cast = temp_df.drop(['cast_popularity', 'top5_popularity', 'num_females', 'is_lead_female'], axis=1)
     df_without_crew = temp_df.drop(['num_crew', 'num_director', 'director_popularity'], axis=1)
     df_sparse = temp_df[['id', 'budget', 'revenue', 'release_year', 'genres_popularity']]
-    df_without_budget = temp_df.drop(['budget'], axis=1)
+    df_without_budget = temp_df.drop(['budget', 'inflation_budget', 'scaled_budget',
+                                      'budget_num_cast_ratio', 'budget_runtime_ratio'], axis=1)
     return [(df, 'all features'), (df_without_cast, 'without cast'),
-            (df_without_crew, 'without crew'), (df_sparse, 'sparse features'), (df_without_budget, 'no budget')]
+            (df_without_crew, 'without crew'), (df_sparse, 'sparse features'),
+            (df_without_budget, 'no budget')]
+
 
 def main():
-    #""" xgboost
-    ###
-    import sys
-    orig_stdout = sys.stdout
-    dataframe = get_movies_db(TRAIN_CSV_PATH)
+    dataframe = pd.read_csv('datasets/filtered_dataset.csv')
     df_list = build_diff_df(dataframe)
-    #sys.stdout = open("results.txt", "w")
+    pred_list = []
+    xgb_df = pd.DataFrame()
+    xgb_df_f = pd.DataFrame()
+    fi_list = []
+
     for df, df_name in df_list:
         print(df_name)
-        do_xgb(df)
+        xgb_df, xgb_df_f, f_importance = do_boosting(df, df_name, xgb_df, xgb_df_f)
+        fi_list.append(f_importance)
+        print('--------------------------------------------------------------')
+
+    tot_rows = df.shape[0]
+    train_size = int(tot_rows * 0.8)
+    test = df[train_size:]
+
+    xgb_df = pd.merge(xgb_df, pd.DataFrame({'id': test.id, 'real_revenue': test.revenue}), on='id')
+    xgb_df_f = pd.merge(xgb_df_f, pd.DataFrame({'id': test.id, 'real_revenue': test.revenue}), on='id')
+    xgb_df.to_csv('new_xgbsubmission.csv', index=False)
+    xgb_df_f.to_csv('new_xgbfullsubmission.csv', index=False)
+    features_df = pd.DataFrame(fi_list)
+    features_df.to_csv('new_feature_importance.csv')
+
+    print('finish')
 
 if __name__ == "__main__":
     main()
